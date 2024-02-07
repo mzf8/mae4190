@@ -57,22 +57,142 @@
             <section class="resume-section" id="lab1">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Lab 1</h2>
+                    <p>Lab 1 was primarily focused on getting our Artemis Boards set-up and ensuring that core functionalities were working correctly before proceeding any further. As such, it mostly involved running example scripts available through the Arduino library. </p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">Heading 1</h3>
-                            <div class="subheading mb-3">Subheading</div>
-                            <p>Explanation</p>
+
+                            <h3 class="mb-0">1) Blink it Up</h3>
+                            <p>The first task in this lab was to run the "Blink it Up" example that comes with the Arduino IDE. This worked without any issues, as seen in the video below. </p>
+                            <video width="320" height="240" controls>
+                                <source src="assets/blink.mp4" type="video/mp4">
+                            </video>
+
+                            <br></br>
+
+                            <h3 class="mb-0">2) Example4_Serial</h3>
+                            <p>The purpose of this task was to ensure that the Artemis was correctly sending data to the serial monitor. In the image below you can see that this worked correctly - when I typed "hi", the serial monitor succesfully echoed this back to the serial output.</p>
+                            <img width="320" height=auto source src="assets/img/lab1-ex2.jpg">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">3) Example2_analogRead</h3>
+                            <p>This task was intended to test that the onboard temperature sensor was working correctly. In the video below, you can see how the temperature output to the Serial Monitor changes when I put my thumb over the sensor.</p>
+                            <video width="320" height="240" controls>
+                                <source src="assets/lab1-ex3.mp4" type="video/mp4">
+                            </video>
+
+                            <br></br>
+
+                            <h3 class="mb-0">4) Example1_MicrophoneOutput</h3>
+                            <p>This task was intended to test that the onboard microphone was working correctly. In the video below, you can see how the "loudest frequency" output to the Serial Monitor changes when I tap the microphone.</p>
+                            <video width="320" height="240" controls>
+                                <source src="assets/lab1-ex4.mp4" type="video/mp4">
+                            </video>
+
+                            <br></br>
+
+                            <h3 class="mb-0">Discussion & Reflection</h3>
+                            <p> Lab 1 was a good opportunity to get up and running with the Artemis board and ensure there were no major software or hardware issues before proceeding. </p>
+
                         </div>
                     </div>
                 </div>
             </section>
             <hr class="m-0" />
             <!-- Lab 2-->
+
             <section class="resume-section" id="lab2">
                 <div class="resume-section-content">
                     <h3 class="mb-0">Lab 2</h3>
-                            <div class="subheading mb-3">Header 1</div>
-                            <p>Explanation</p>
+                            <p>Lab 2 was  focused on setting up a Bluetooth connection between our computers and our Artemis boards. We worked on testing several basic functionalities in order to build our understanding of the BLE library and how to send and recieve data with our Artemis board. </p>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+
+                            <h3 class="mb-0">Prelab</h3>
+                            <p>The prelab for this Lab required us to set up a virtual environment on our computers and then download the Codebase for the Lab to this environment. Once this was done, we started a Jupyter server from the virtual environment and then setup our Artemis boards for bluetooth connection. We could verify that this step was properly completed by checking that the Artemis successfuly output its MAC adress to the Serial Monitor, as seen below. </p>
+                            <img width="600" height=auto source src="assets/img/lab2-advert.png">
+                            </img>
+                            <br></br>
+                            <p>Initiating a bluetooth connection between our computers and our Artemis board required us to generate a unique UUID, as well as referencing the correct MAC address. This UUID was then referenced in the ble_arduino.ino file to ensure that we connected to the correct device. The MAC address and UUID were also referenced in the connections.yaml configurations file. With this done, a successful connection was established. </p>
+                            <img width=100% height=auto source src="assets/img/lab2-connected.png">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">1) ECHO</h3>
+                            <p>This task required us to implement a new command on our Arduino that recieved an input string and then sent back an augmented string to our computers via bluetooth. In this case the string "Robot says -> ... :)" was added to any string input. So a string input of "HiHello" would return "Robot says -> HiHello :)" to our computers. Arduino code for this command, as well as evidence of it working can be seen below. Before implementing this function, the command had to be added to the CommandTypes enum on the Arduino code and the cmd_types.py file. </p>
+                            <div class="gistcontainer" id="gist1">
+                                <script src="https://gist.github.com/mzf8/5b92aa07a7cd56d4fa60b7315a484cf9.js"></script>
+                            </div>
+                            <img width=100% height=auto source src="assets/img/lab2-q1.png">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">2) GET_TIME_MILLLIS</h3>
+                            <p>This task required us to implement a command on our Arduino that sends the current time from the millis() function from our Arduino to our computer. millis(0 returns the time, in milliseconds, since the arduino booted up. </p>
+                            <div class="gistcontainer" id="gist2">
+                                <script src="https://gist.github.com/mzf8/346e0536ea161c4434888e85091b8e5e.js"></script>
+                            </div>
+                            <img width=100% height=auto source src="assets/img/lab2-q2.png">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">3) Creating a notification handler</h3>
+                            <p>In this part of the Lab, we created a notification handler to recieve strings from our Arduino. Some minor parsing was added to the handler so that it stripped the "T:" fromn the returned time and only printed the actual value of the time. A global list, messages, was created for storing all strings in a single transmission, which was useful for some of the data analysis tasks later in the Lab.</p>
+                            <img width=100% height=auto source src="assets/img/lab2-q3.png">
+                            </img>
+
+                            <br></br>
+                            <p>The latter portion of the lab focused on comparing different methods of sending data from the Arduino to our computers in order to find out which methods were fastest. </p>
+                            <br></br>
+
+                            <h3 class="mb-0">4) TEST_TIME </h3>
+                            <p>Here, we created a new command that rapidly recorded the current time using milli() and sent them one by one to the computer via bluetooth. I created a for loop and used it to send 1000 time values to my computers. Once I had received them, I used this information to work out how many messages per second I was sending to my computer. This number came out to be about ~160 messages per second. Using the fact that each of these is a 16 bit string and that there are 8 bits in a byte, we can work out that the effective data transfer rate is about ~320 B/s </p>
+                            <div class="gistcontainer" id="gist4">
+                                 <script src="https://gist.github.com/mzf8/384978ba75d530f289a526be53b9ab2f.js"></script>
+                            </div>
+                            <img width=100% height=auto source src="assets/img/lab2-q4.png">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">5) TEST_TIME_ARR & SEND_TIME_DATA </h3>
+                            <p> In the TEST_TIME_ARR command, the proccess differed in that the time stamps were all collected and stored locally in an array on the Arduino. Once all the values were collected in the array, the SEND_TIME_DATA command would iterate through the array and send the values one by one. In the notification handler (see 3), I stored each of these values into an array called messages. I then checked the length of this array to ensure 1000 timestamps were correctly recieved. </p>
+                            <div class="gistcontainer" id="gist5">
+                                 <script src="https://gist.github.com/mzf8/4eb866759cd2c77653fea9a02c580aa6.js"></script>
+                            </div>
+                            <img width=100% height=auto source src="assets/img/lab2-q5.png">
+                            </img>
+
+                            <br></br>
+
+                             <h3 class="mb-0">6) GET_TEMP_READINGS </h3>
+                            <p> In the TIME_TEMP_ARR command, temperature and time data were collected simultaneously and stored in two different arrays, 'temp' and 'time'. The GET_TEMP_READINGS command then iterated through each of these arrays and combined the information together into a single, comma separated, string (e.g. "24013, 13")to send to the computer.</p>
+                            <div class="gistcontainer" id="gist6">
+                                 <script src="https://gist.github.com/mzf8/3ab9ff8c8fb0d0e61cd72f6f6cc93744.js"></script>
+                            </div>
+                            <p>In order to parse this information, I created a new notification handler called temp_handler, which used the split() method to split the incoming string using the comma as a separator. I then stored the time and temperature data into separate lists, whie preserving the order. The images below show the code for the notification handler, as well as the sample output from running the code.</p>
+                            <img width=100% height=auto source src="assets/img/lab2-q6.png">
+                            </img>
+
+                            <br></br>
+
+                            <h3 class="mb-0">7) Comparing data transfer methods </h3>
+                            <p> The final part of this Lab asked us to compare the two data transfer methods demonstrated in tasks 4 and 5 - namely, writing data in large batches locally and then sending them one-by-one versus sending data one-by-one. It also asked us to consider how much data could be stored on the Artemis board before running out of memory. </p>
+
+                            <p> The second method (where data was stored locally and sent in a batch) resulted in much greater rates of data transfer but the primary drawback here is that it uses up much more of the Artemis' onboard memory so we have to be careful not to overfill.</p>
+
+                            <p> The Artemis has 384kB of RAM. The second method was writing data at a rate of ~32,000 messages per second, which results in a write speed of about 6.4kB/s. At this rate, the Artemsis would run out of memory in approximately 60 seconds. Looked at differently, if each piece of data is a 16-bit string, we can write 192 strings to memory before running out of space. </p>
+
+                            <br></br>
+
+                            <h3 class="mb-0">Discussion & Reflection</h3>
+                            <p> Overall, Lab 2 offered an invaluable insight into the workings of bluetooth communication, as well as providing an understanding of how sending data is not always just a matter of sending the data - there can be faster or more efficient ways within this. </p>
+
             </section>
             <hr class="m-0" />
             <!-- Lab 3 -->

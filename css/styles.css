@@ -91,6 +91,13 @@
   }
 }
 
+.gistcontainer {
+  max-height: 300px;
+  overflow: auto;
+}
+
+.gistcontainer {max-height:none;}
+
 body {
   margin: 0;
   font-family: var(--bs-body-font-family);
