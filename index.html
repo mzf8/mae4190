@@ -63,7 +63,7 @@
 
                             <h3 class="mb-0">1) Blink it Up</h3>
                             <p>The first task in this lab was to run the "Blink it Up" example that comes with the Arduino IDE. This worked without any issues, as seen in the video below. </p>
-                            <video width="320" height="240" controls>
+                            <video width="500" height="400" controls>
                                 <source src="assets/blink.mp4" type="video/mp4">
                             </video>
 
@@ -78,7 +78,7 @@
 
                             <h3 class="mb-0">3) Example2_analogRead</h3>
                             <p>This task was intended to test that the onboard temperature sensor was working correctly. In the video below, you can see how the temperature output to the Serial Monitor changes when I put my thumb over the sensor.</p>
-                            <video width="320" height="240" controls>
+                            <video width="500" height="400" controls>
                                 <source src="assets/lab1-ex3.mp4" type="video/mp4">
                             </video>
 
@@ -86,7 +86,7 @@
 
                             <h3 class="mb-0">4) Example1_MicrophoneOutput</h3>
                             <p>This task was intended to test that the onboard microphone was working correctly. In the video below, you can see how the "loudest frequency" output to the Serial Monitor changes when I tap the microphone.</p>
-                            <video width="320" height="240" controls>
+                            <video width="500" height="400" controls>
                                 <source src="assets/lab1-ex4.mp4" type="video/mp4">
                             </video>
 
@@ -142,7 +142,7 @@
                             <br></br>
 
                             <h3 class="mb-0">3) Creating a notification handler</h3>
-                            <p>In this part of the Lab, we created a notification handler to recieve strings from our Arduino. Some minor parsing was added to the handler so that it stripped the "T:" fromn the returned time and only printed the actual value of the time. A global list, messages, was created for storing all strings in a single transmission, which was useful for some of the data analysis tasks later in the Lab.</p>
+                            <p>In this part of the Lab, we created a notification handler to recieve strings from our Arduino. Some minor parsing was added to the handler so that it stripped the "T:" from the returned time and only printed the actual value of the time. A global list, messages, was created for storing all strings in a single transmission, which was useful for some of the data analysis tasks later in the Lab.</p>
                             <img width=100% height=auto source src="assets/img/lab2-q3.png">
                             </img>
 
@@ -199,8 +199,51 @@
             <section class="resume-section" id="lab3">
                 <div class="resume-section-content">
                     <h3 class="mb-0">Lab 3</h3>
-                            <div class="subheading mb-3">Header 1</div>
-                            <p>Explanation</p>
+                            <p>Lab 3 was focused on setting up the IMU, beginning to collect data and implementing both low-pass and complimentary filters. The purpose of the lab was to investigate how these different methods of post-processing affect the data, as welll as how information from different sensors could be combined to produce more accurate results. We are using the ICM-20948 IMU. </p>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+
+                            <h3 class="mb-0">1) Setup the IMU</h3>
+                            <p>The beginning of this lab required us to setup our IMUs with our Artemis boards. We began by connecting the IMU to the board using the QWIIC connectors. This can be seen in the image below. I also implemented a small piece of code in my setup() loop, which makes the Artemis' on-board LED blink when it boots up. This was useful to add a bit of visual feedback for debugging purposes. </p>
+                            <img width="320" height=auto source src="assets/img/lab3-imu-setup.jpg">
+                            </img>
+                            <br></br>
+                            <div class="gistcontainer" id="gist6">
+                                 <script src="https://gist.github.com/mzf8/e4d401011737654c27b6e1f0d75295d4.js"></script>
+                            </div>
+                            
+                            <p>In establishing an I2C connection between our Artemis and IMU it was also importnat for us to consider ADO_VAL. This value determines the last bit in our IMU's I2C address. In my case, the IMU jumper was closed so the value was 0. The AD0_VAL value is important as it can allow us to have two IMUs connected to our Artemis with unique addresses. </p>
+                            <p>After connecting the IMU and setting up a connection to it via I2C, I used the ICM-20948 example script, "Example1_Basics" to test out the IMU. The video below shows the output from the Serial Plotter when running this example script. This helped to confirm that the IMU was working correctly.</p>
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab3-imu-example.mp4" type="video/mp4">
+                            </video>
+                            <p>In order to better understand the data from the IMU, such as the differencces between the accelerometer and gyroscope, I chose to send packages of recorded data via bluetooth to a Python environment. From here, I was able to conduct a  more detailed analysis. This will be discussed in sections 2) and 3) below. </p>
+
+                            <h3 class="mb-0">2) Accelerometer</h3>
+                            <p>After ensuring everything the IMU was correctly setup we then had to convert the raw data from the accelerometer (in the form of accelerations in the x, y and z directions) into pitch and roll values. This was done using the equations below. Note that it is not possible to calculate yaw from the accelerometer since the force of gravity acts along the z-axis, which is the axis that yaw acts on. That is, any rotation about the z-axis (yaw) will not result in a change in gravitational forces measured by the accelerometer and, hence, yaw cannot be measured.</p>
+                            <img width="320" height=auto source src="assets/img/lab3-pitch-roll-eqs.png">
+                            </img>
+                            <br></br>
+                            <p>To confirm that these equations were correctly implemented, the IMU was placed at orientations of -90, 0, and 90 degrees in both the pitch and roll directions. The surface and edges of a table were used in order to get these values as close as possible. There is some discrepancy between the reported IMU pitches and rolls and the actual pitches and rolls but, in general, they are in accordance with one another. Any discrepencies are small enough to be attributed to a mix of innacuracy in the setup (i.e., placing the IMU at an ange that isn't exacty 90 degrees) and noise. </p>
+                            <img width="500" height=auto source src="assets/img/lab3-pitch-roll-test.png">
+                            </img>
+                            <p>I then used a Fast Fourier Transform (FFT) to conduct a frequency spectrum analysis of the accelerometer signal. This was used to analyse the impact of background noise on the accuracy of the signal. A Low Pass Filter was then implemented to remove noise from the final signal. The results of this analysis in the pitch and roll directions can be seen below. </p>
+                            <img width="500" height=auto source src="assets/img/lab3-fft-pitch.png">
+                            </img>
+                            <img width="500" height=auto source src="assets/img/lab3-fft-roll.png">
+                            </img>
+                            <p>In an ideal world, this analysis would have been conducted with the IMU attached to the robot as it was driving. This would allow us to record the vibrational frequency of the robot's driving and fiter this noise out. However, this lab was carried out before connections were soldered so we were not in a position to do so. As a result of this, there was relatively little background noise (about +/- 2 degrees) when the FFT was carried out. </p>
+                            <p>I still opted to implement a low pass filter with an alpha vaue of 0.08 because, after some testing, I found that this did beneficially reduced the amount of noise in the data. Going forward, once the IMU is mounted to the robot, I would like to repeat this analysis to see if a better value of alpha can be chosen to minimise vibrational noise. The code snippet below gives a high-level version of the logic applied in the Low Pass Filter's implementation. </p>
+                            <p>LPF EFFECT ON FFT</p>
+                            <div class="gistcontainer" id="gist6">
+                                 <script src="https://gist.github.com/mzf8/74bc5b38cfb03dd2d3c8d528e4d2cc0d.js"></script>
+                            </div>
+                            
+                            
+                            
+
+
             </section>
             <hr class="m-0" />
             <!-- Lab 4 -->
