@@ -199,7 +199,7 @@
             <section class="resume-section" id="lab3">
                 <div class="resume-section-content">
                     <h3 class="mb-0">Lab 3</h3>
-                            <p>Lab 3 was focused on setting up the IMU, beginning to collect data and implementing both low-pass and complimentary filters. The purpose of the lab was to investigate how these different methods of post-processing affect the data, as welll as how information from different sensors could be combined to produce more accurate results. We are using the ICM-20948 IMU. </p>
+                            <p>Lab 3 was focused on setting up the IMU, beginning to collect data and implementing a Low Pass Filter and Complimentary Filter. The purpose of the lab was to investigate how these different methods of post-processing affect the data, as well as to see how information from different sensors could be combined to produce more accurate results. We are using the ICM-20948 IMU. </p>
 
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
@@ -209,40 +209,71 @@
                             <img width="320" height=auto source src="assets/img/lab3-imu-setup.jpg">
                             </img>
                             <br></br>
-                            <div class="gistcontainer" id="gist6">
-                                 <script src="https://gist.github.com/mzf8/e4d401011737654c27b6e1f0d75295d4.js"></script>
-                            </div>
                             
                             <p>In establishing an I2C connection between our Artemis and IMU it was also importnat for us to consider ADO_VAL. This value determines the last bit in our IMU's I2C address. In my case, the IMU jumper was closed so the value was 0. The AD0_VAL value is important as it can allow us to have two IMUs connected to our Artemis with unique addresses. </p>
                             <p>After connecting the IMU and setting up a connection to it via I2C, I used the ICM-20948 example script, "Example1_Basics" to test out the IMU. The video below shows the output from the Serial Plotter when running this example script. This helped to confirm that the IMU was working correctly.</p>
-                            <video width="500" height="400" controls>
+                            <video width="500" height="400" controls muted>
                                 <source src="assets/lab3-imu-example.mp4" type="video/mp4">
                             </video>
-                            <p>In order to better understand the data from the IMU, such as the differencces between the accelerometer and gyroscope, I chose to send packages of recorded data via bluetooth to a Python environment. From here, I was able to conduct a  more detailed analysis. This will be discussed in sections 2) and 3) below. </p>
+                            <p>In order to better understand the data from the IMU, such as the differences between the accelerometer and gyroscope, I chose to send packages of recorded data via bluetooth to a Python environment. From here, I was able to conduct a  more detailed analysis. This will be discussed in Sections 2 and 3 below. </p>
 
                             <h3 class="mb-0">2) Accelerometer</h3>
-                            <p>After ensuring everything the IMU was correctly setup we then had to convert the raw data from the accelerometer (in the form of accelerations in the x, y and z directions) into pitch and roll values. This was done using the equations below. Note that it is not possible to calculate yaw from the accelerometer since the force of gravity acts along the z-axis, which is the axis that yaw acts on. That is, any rotation about the z-axis (yaw) will not result in a change in gravitational forces measured by the accelerometer and, hence, yaw cannot be measured.</p>
+                            <p>After ensuring the IMU was correctly set up we then had to convert the raw data from the accelerometer (in the form of accelerations in the x, y and z directions) into pitch and roll values. This was done using the equations below. Note that it is not possible to calculate yaw from the accelerometer since the force of gravity acts along the z-axis, which is the axis that yaw acts around. Any rotation about the z-axis (yaw) will not result in a change in gravitational forces measured by the accelerometer and, hence, yaw cannot be measured.</p>
                             <img width="320" height=auto source src="assets/img/lab3-pitch-roll-eqs.png">
                             </img>
                             <br></br>
                             <p>To confirm that these equations were correctly implemented, the IMU was placed at orientations of -90, 0, and 90 degrees in both the pitch and roll directions. The surface and edges of a table were used in order to get these values as close as possible. There is some discrepancy between the reported IMU pitches and rolls and the actual pitches and rolls but, in general, they are in accordance with one another. Any discrepencies are small enough to be attributed to a mix of innacuracy in the setup (i.e., placing the IMU at an ange that isn't exacty 90 degrees) and noise. </p>
                             <img width="500" height=auto source src="assets/img/lab3-pitch-roll-test.png">
                             </img>
+                            <br></br>
                             <p>I then used a Fast Fourier Transform (FFT) to conduct a frequency spectrum analysis of the accelerometer signal. This was used to analyse the impact of background noise on the accuracy of the signal. A Low Pass Filter was then implemented to remove noise from the final signal. The results of this analysis in the pitch and roll directions can be seen below. </p>
                             <img width="500" height=auto source src="assets/img/lab3-fft-pitch.png">
                             </img>
                             <img width="500" height=auto source src="assets/img/lab3-fft-roll.png">
                             </img>
-                            <p>In an ideal world, this analysis would have been conducted with the IMU attached to the robot as it was driving. This would allow us to record the vibrational frequency of the robot's driving and fiter this noise out. However, this lab was carried out before connections were soldered so we were not in a position to do so. As a result of this, there was relatively little background noise (about +/- 2 degrees) when the FFT was carried out. </p>
-                            <p>I still opted to implement a low pass filter with an alpha vaue of 0.08 because, after some testing, I found that this did beneficially reduced the amount of noise in the data. Going forward, once the IMU is mounted to the robot, I would like to repeat this analysis to see if a better value of alpha can be chosen to minimise vibrational noise. The code snippet below gives a high-level version of the logic applied in the Low Pass Filter's implementation. </p>
-                            <p>LPF EFFECT ON FFT</p>
+                            <p>In an ideal world, this analysis would have been conducted with the IMU attached to the robot as it was driving. This would allow us to record the vibrational frequency of the robot's driving and fiter this noise out. However, this lab was carried out before connections were soldered so we were not able to do this. As a result of this, there was relatively little background noise (about +/- 2 degrees) when the FFT was carried out. It is worth noting that the IMU we are using already has a built-in Low Pass Filter so this may explain the relatively small amounts of noise present in the unfiltered signal. </p>
+                            <p>I still opted to implement a low pass filter with an alpha vaue of 0.08 because, after some testing, I found that this reduced the amount of noise in the data. Going forward, once the IMU is mounted to the robot, I would like to repeat this analysis to see if a better value of alpha can be chosen to minimise vibrational noise. The code snippet below gives a high-level version of the logic applied in the Low Pass Filter's implementation. As we can see, the Low Pass Filter successfuly removes much of the noise in the signal leading to closer to +/- 0.1 degrees of error. The effect of the Low Pass Filter can also be seen on the Frequency Spectrum FFT graph as the amplitude of many of the noisy frequencies decreases.</p>
                             <div class="gistcontainer" id="gist6">
                                  <script src="https://gist.github.com/mzf8/74bc5b38cfb03dd2d3c8d528e4d2cc0d.js"></script>
                             </div>
-                            
-                            
-                            
 
+                            <h3 class="mb-0">3) Gyroscope & Comparison With Accelerometer</h3>
+                            <p>I then used the data from the IMU's gyroscope to compute pitch, roll, and yaw using a different set of equations. Since the gyroscope measures a rate of change in angle [deg/s], I multiplied the gyroscope reading by a time differential, dt, to get an angle in degrees. Some high-level pseudocode that demonstrates the logic for this can be seen below.  </p>
+                            <div class="gistcontainer" id="gist6">
+                                 <script src="https://gist.github.com/mzf8/0b6947b1fb48a52d64f77f9697acfa1f.js"></script>
+                            </div>
+                            <p>I then recorded this gyroscope data over a period of time and sent it to my Python environment via bluetooth to plot it. The plot below shows the pitch, roll and yaw data collected from the gyroscope while the robot was stationary. </p>
+                            <img width="500" height=auto source src="assets/img/lab3-gyro-data.png">
+                            </img> 
+                            <p>Plotting the data revealed a few key differences between the signals from the gyroscope and accelerometer. Namely, although the gyroscope data isn't as noisy as the accelerometer, the method of computation results in a signficant drift in the signal. That is, the signal continually increases or decreases even when the robot is not moving. This drift can produce large errors in the angle recorded by the robot. As a result of this, I looked at combining data from both the gyroscope and accelerometer in a Complimentary Filter. This is discussed in Section 4. </p>
+
+                            <p>The drifting of the gyroscope data  has an important relationship with sampling rate. The slower the sampling rate - i.e., the longer the delay between fetching new data - the greater the data drift is. So, rapid sampling is important to reduce drift.</p>
+
+                            <h3 class="mb-0">4) Complimentary Filter</h3>
+                            <p>In order to implement a Complimentary Filter I fused the data from both the gyroscope and the accelerometer. The goal here is to get readings for pitch, roll and yaw that are stable, noise-free and not susceptible to drift. This relies on defining a value, alpha_comp, which determines the weighting between the gyroscope and accelerometer data. After testing, I found a value of 0.3 was optimal.</p>
+                            <div class="gistcontainer" id="gist6">
+                                 <script src="https://gist.github.com/mzf8/0750a64438de401c067a59822687a500.js"></script>
+                            </div>
+
+                            <p>I chose to feed the results of my LPF accelerometer data into the Complimentary Filter rather than passing in raw data because, during my testing, this produced more reliable and less noisy results. However, this also introduces a slight lag in the data. This may be a problem when implementing a PID controller later in the semester, as it will slow down the control loop, which could cause some of the robot's movements to be less smooth. I iterated over several different versions of the alpha value for the Complimentary Filter, alpha_lpf, in order to reduce noise without introducing too much lag. The figures below show two examples with different alpha_lpf values recorded whille moving the IMU. The first plot was created using an alpha_lpf value of 0.08, while the second was created using an alpha_lpf value of 0.2. The data in the second plot lags less, while still reducing noise. I chose 0.2 as my final value for alpha_lpf.</p>
+                            <img width="500" height=auto source src="assets/img/lab3-compfilter-moving.png">
+                            </img>
+                            <img width="500" height=auto source src="assets/img/lab3-compfilter-moving-newalpha.png">
+                            </img>
+
+                            <h3 class="mb-0">5) Sample Data</h3>
+                            <p>The final part of this lab invovled restructuring the code base to speed up the sampling rate. Notably, I moved the filtering code into the main loop and removed all delays and print statements. I also updated my case so that it acted as a flag to start and stop recording data in the main loop rather than carrying out the data collection in the case itself. With these changes I was able to achieve a sampling rate of ~300 Hz, which corresponds to one measurement every ~3ms. </p>
+    
+                            <p>I then tested this over a period of 5s to confirm that I could collect and send that amount of data of bluetooth. I also printed the first 10 values of each of the pitch, roll, yaw, and time arrays to confirm they were correctly populated. The results of that test can be seen in the image below. </p>
+                            <img width=100% height=auto source src="assets/img/lab3-5s-test.png">
+                            </img>
+                            <br></br>
+                            <h3 class="mb-0">6) Record A Stunt</h3>
+                            <p>Finally, I tested the RC car out to get a sense of its behaviour so that I could establish a baseline to see it was working correctly. A video of this can be seen below. </p>
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab3-stunt.mp4" type="video/mp4">
+                            </video>
+                             
 
             </section>
             <hr class="m-0" />
