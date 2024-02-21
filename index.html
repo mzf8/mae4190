@@ -56,8 +56,8 @@
             <!-- Lab 1-->
             <section class="resume-section" id="lab1">
                 <div class="resume-section-content">
-                    <h2 class="mb-5">Lab 1</h2>
-                    <p>Lab 1 was primarily focused on getting our Artemis Boards set-up and ensuring that core functionalities were working correctly before proceeding any further. As such, it mostly involved running example scripts available through the Arduino library. </p>
+                    <h2 class="mb-5">Lab 1 - Part 1</h2>
+                    <p>This part of Lab 1 was primarily focused on getting our Artemis Boards set-up and ensuring that core functionalities were working correctly before proceeding any further. As such, it mostly involved running example scripts available through the Arduino library. </p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
 
@@ -102,10 +102,10 @@
             <hr class="m-0" />
             <!-- Lab 2-->
 
-            <section class="resume-section" id="lab2">
+            <section class="resume-section">
                 <div class="resume-section-content">
-                    <h2 class="mb-5">Lab 2</h2>
-                            <p>Lab 2 was  focused on setting up a Bluetooth connection between our computers and our Artemis boards. We worked on testing several basic functionalities in order to build our understanding of the BLE library and how to send and recieve data with our Artemis board. </p>
+                    <h2 class="mb-5">Lab 1 - Part 2</h2>
+                            <p>The second part of Lab 1 was  focused on setting up a Bluetooth connection between our computers and our Artemis boards. We worked on testing several basic functionalities in order to build our understanding of the BLE library and how to send and recieve data with our Artemis board. </p>
 
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
@@ -191,15 +191,15 @@
                             <br></br>
 
                             <h3 class="mb-0">Discussion & Reflection</h3>
-                            <p> Overall, Lab 2 offered an invaluable insight into the workings of bluetooth communication, as well as providing an understanding of how sending data is not always just a matter of sending the data - there can be faster or more efficient ways within this. </p>
+                            <p> Overall, Lab 1 offered an invaluable insight into the workings of bluetooth communication, as well as providing an understanding of how sending data is not always just a matter of sending the data - there can be faster or more efficient ways within this. </p>
 
             </section>
             <hr class="m-0" />
             <!-- Lab 3 -->
-            <section class="resume-section" id="lab3">
+            <section class="resume-section" id="lab2">
                 <div class="resume-section-content">
-                    <h2 class="mb-5">Lab 3</h2>
-                            <p>Lab 3 was focused on setting up the IMU, beginning to collect data and implementing a Low Pass Filter and Complimentary Filter. The purpose of the lab was to investigate how these different methods of post-processing affect the data, as well as to see how information from different sensors could be combined to produce more accurate results. We are using the ICM-20948 IMU. </p>
+                    <h2 class="mb-5">Lab 2</h2>
+                            <p>Lab 2 was focused on setting up the IMU, beginning to collect data and implementing a Low Pass Filter and Complimentary Filter. The purpose of the lab was to investigate how these different methods of post-processing affect the data, as well as to see how information from different sensors could be combined to produce more accurate results. We are using the ICM-20948 IMU. </p>
 
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
@@ -277,17 +277,75 @@
 
             </section>
             <hr class="m-0" />
-            <!-- Lab 4 -->
-            <section class="resume-section" id="lab4">
+            <!-- Lab 3 -->
+            <section class="resume-section" id="lab3">
                 <div class="resume-section-content">
-                    <h2 class="mb-5">Lab 4</h2>
-                    <p>Description...</p>
+                    <h2 class="mb-5">Lab 3</h2>
+                    <p>Lab 3 focused on setting up the Time of Flight (ToF) sensors on our robots. We installed a QWIIC Breakout board to allow us to connect three sensors to our Atermis boards: the IMU and two ToF sesnors. We then soldered the QWIIC connectors to our ToF sensors. We then tested our ToF sensors, considering strategies to manage having both sensors communicating over I2C at the same. We are using the VL53L1X ToF sensor.</p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
+                            <h3 class="mb-0">1) I2C Communication With Two Sensors</h3>
+                            <p>One of the major problems in this lab was working out how to communicate with both ToF sensors over I2C. This is because both sensors had the same default I2C address. The default address listed in the datasheet for the ToF sensors is 0x52. However, by performing an I2C scan of connected devices we can see that the ToF sensor's actual address is 0x29 (see image below). In order to connect two ToF sensor and communicate with both of them over I2C, I had to change the address of the second sensor.</p>
+                            <img width=50% height=auto source src="assets/img/lab3-I2C-scan.png">
+                            </img>
+                            <br></br>
+                            <p>I chose to change the address of the second sensor to be 0x30. This was done by using the XSHUT pin on the sensor to power it down. The address was then changed and the sensor was powered back on. Sample code for this can be seen below.</p>
+                            <div class="gistcontainer" id="gist6">
+                                <script src="https://gist.github.com/mzf8/a0a2aff4ab55844ed6703828c7dc8ade.js"></script>
+                            </div>
 
-                            <h3 class="mb-0">1) ...</h3>
-            </section>
-            <hr class="m-0" />    
+
+                            <h3 class="mb-0">2) Wiring</h3>
+                            <p>The image below shows a wiring diagram for how the sensors were connected to the Artemis board. The thicker purple lines indicate connections where ordinary QWIIC cables were used, while the thinner lines indicate soldered connections. </p>
+                            <img width=50% height=auto source src="assets/img/lab3-wiring-diagram.png">
+                            </img>
+                            <br></br>
+                             <p>The finished board with IMU and two ToF sensors can be seen below.</p>
+                             <img width=50% height=auto source src="assets/img/lab3-board-photo.jpg">
+                            </img>
+                            <br></br>
+
+                            <h3 class="mb-0">3) Sensor Placement</h3>
+                            <p>As the robot only has two sensors it will only be able to detect obstacles in a maximum of two directions using the ToF sensors. It makes sense to place at least one sensor in the front since this is the default direction of travel for the robot. The second could either be doubled up at the front to increase the reliability of the results by offering two sets of readings, or placed on one of the sides to increase the robot's awareness of its surrounding area. I will likely choose to mount the second sensor to the back of the robot. Ultimately, this means that obstacles coming towards the robot from the sides will be missed.</p>
+
+                            <h3 class="mb-0">4) Sensor Readings & Comparison of Short vs Lond Distance Mode</h3>
+                            <p>The ToF sensors have two modes that optimize their ranging performance for different maximum ranges. "Short Mode" is optimized for distances of up to 1.3m, while "Long Mode" is optimized for distances of up to 4m. In order to test each of these modes, and the performance of my sensors in general, I mounted the sensor to a fixed point and used a tape-measure to place an object at different distances from the sensor. This setup can be seen below. </p>
+                            <img width=50% height=auto source src="assets/img/lab3-testing-setup.jpg">
+                            </img>
+                            <br></br>
+                            <p>I took readings from the sensor at distances of: 0.2m, 0.4m, 0.6m, 0.8m, 1.0m, 1.5m, and 2.0m accross both modes. For each distance, I took 50 recordings. I then sent these results to my Jupyter environment and plotted them, as well as computing average distances, standard deviations and percentage errors for each case. These results can be seen below.</p>
+                            <img width=50% height=auto source src="assets/img/lab3-graph-final.png">
+                            </img>
+                            <img width=50% height=auto source src="assets/img/lab3-distmode-compare.png">
+                            </img>
+                            <p>The results were reasonably consistent across both modes. As expected, though, the Long Mode was much more accurate than the Short Mode at longer ranges. This analysis also revealed that the reliability of the data decreases dramatically at range, with the standard deviation between readings rising up to ~30 after 2m. Overall, I find that, given that these two modes performed similarly, the Long Distance mode should be used going forward. This wil give the robot the opporunity to respond to obstacles at a greater distance, which will help given how fast it travels. </p>
+
+                            <h3 class="mb-0">5) Using Two Sensors</h3>
+                            <p>Once the address was changed, as described in Section 1 above, I was able to collect data fromn both ToF sensors simultaneously. This is demonstrated in  the video below. </p>
+                            <video width=50% height=auto controls>
+                                <source src="assets/lab3-two-sensors.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <h3 class="mb-0">6) ToF Sensor Speed</h3>
+                            <p>I also wanted to compare the rate at which the ToF sensors were collecting data with the rate at which the main loop of the Artemis board was running. To do this, I printed the current on-board time as quickly as possible and printed a "NEW DATA" flag only once data from the sensors became available. This analysis showed that the main loop ran about once every 1-3ms when the sensors were not trying to collect data. Once the data collection process started, the main loop only printed the time once every ~10ms. Additionally, the sensors report a new value about once every ~100ms. A screenshot from a moment during this test where the sensors where collecting data can be seen below. I think the current limiting factor of the speed of the loop when data collection is happening likely comes from the call to check if new sensor data is available - "checkForDataReady()". </p>
+                            <img width=50% height=auto source src="assets/img/lab3-speed-test.png">
+                            </img>
+                            <br></br>
+                            <p>In order to carry out this test, I used the following code in my main loop() function:</p>
+                            <div class="gistcontainer" id="gist6">
+                                <script src="https://gist.github.com/mzf8/ba0c7e0322b36d5d282f306b5104eca6.js"></script>
+                            </div>
+
+                            <h3 class="mb-0">7) Timestamped Sensor Data</h3>
+                            <p>Finally, I recorded timestamps along with all of my sensor data. I then sent this data to my Jupyter environment via bluetooth and plotted distance vs time graphs. An example of one of these graphs is shown below.</p>
+                            <img width=50% height=auto source src="assets/img/lab3-tof-timestamp.png">
+                            </img>
+
+
+
+
+            <hr class="m-0" /> 
         </div>
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
