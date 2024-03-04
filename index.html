@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>MAE 4190 - Lab Portfolio</title>
+        <title>Fast Robots - Max Freeman</title>
         <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -341,12 +341,94 @@
                             <p>Finally, I recorded timestamps along with all of my sensor data. I then sent this data to my Jupyter environment via bluetooth and plotted distance vs time graphs. An example of one of these graphs is shown below.</p>
                             <img width=50% height=auto source src="assets/img/lab3-tof-timestamp.png">
                             </img>
+                        </div>
+                    </div>
+
+            <hr class="m-0" />
+
+            <!-- Lab 4 -->
+
+            <section class="resume-section" id="lab4">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 4</h2>
+                    <p>Lab 4 focused on setting up the dual motor drivers for our robot and switching from manual control to open loop control. We soldered the motor drivers to the Artemis board and then connected and mounted all components from the previous labs inside the chassis of the robot. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Wiring Dual Motor Drivers</h3>
+                            <p>Before we could start soldering the motor drivers to the board, we first had to plan out how we would wire them. The wiring diagram below shows the final setup for this. One key consideration for this step was ensuring that the motor drivers were connected to PWM enabled pins on the Artemis board. After consulting the Artemis specifications, pins 4, A5, 6, and 7 were selected for use. Though the motor drivers we are using are designed to control up to two motors each, we opted to bridge the A and B pins on the motor drivers. This allowed each motor driver to deliver twice as much current to the motors, allowing for faster motor speeds. </p>
+                            <img width=75% height=auto source src="assets/img/lab4-wiring-diagram.jpg">
+                            </img>
+                            <p>It is also worth discussing battery power in this arrangement. Both motor drivers draw power from one battery, while the Artemis draws power from its own, separate, battery. It was necessary to bridge the Vin and GND terminals of the two motor drivers so that they could be powered from the same battery. The Artemis and motor drivers are powered from different batteries in order to avoid any undesirable effects under load. If they were powered from the same battery, it is possible that the motors would draw too much current under load, causing the Artemis to power down.</p>
+
+                            <h3 class="mb-0">2) Oscilloscope Testing</h3>
+
+                            <p>Once I had soldered the first motor driver, I wanted to test it using an oscilloscope and power generator to verify that PWM signals were being correctly generated. I connected the Vin and GND pins of my motor driver to an external power supply. I chose to set the power output of this supply to 3.7V in order to replicate the same voltage that would ultimately come from the battery (3.7V 850mAh). After powering the motor driver board, I attached the oscilloscope probe to one of the board's output pins and attached the other end of the probe to the common ground from the power supply. This setup can be seen below. </p>
+
+                            <img width=50% height=auto source src="assets/img/lab4-osc-setup.jpg">
+                            </img>
+
+                            <p>I then sent a simple PWM signal to the motor drivers. I began by defining each of the pins that were connected and switching the pin mode for these pins to be output. I then used the analogWrite function to send a PWM value of 200 to the motor driver. A code snippet of this can also be seen below.</p>
+                            <div class="gistcontainer" id="gist6">
+                                <script src="https://gist.github.com/mzf8/f6eb8e32041fb0d5ded92354235a1379.js"></script>
+                            </div>
+
+                            <p>I then used the osciloscope to verify the output. This can be seen below. The output shows a square wave, as we would except, as well as a high duty cycle because the output is HIGH for most of the period (this makes sense given a PWM input of 200).</p>
+
+                            <img width=50% height=auto source src="assets/img/lab4-osc-reading.jpg">
+                            </img>
+
+                            <h3 class="mb-0">3) Spinning One Side</h3>
+
+                            <p>After confirming the motor driver was working correctly, I then sodlered it into the car to test it on the actual motors. To do this, I sent another simple PWM command to the robot, except this time I alternated between sending forward and backward commands to test whether the wheels could spin both ways. The code snippet below shows the code used and the video below shows the result of this test. As you can see, the wheels on the robot spin one way, before switching and spinning in the opposite direction. </p>
+                            <div class="gistcontainer" id="gist6"> 
+                                <script src="https://gist.github.com/mzf8/6325d706f328d5523bde61658c89a2a2.js"></script>
+                            </div>
+                            <video width="500" height="400" controls muted>
+                                <source src="assets/lab4-one-motor.mp4" type="video/mp4">
+                            </video>
+
+                            <h3 class="mb-0">4) Spinning Both Sides</h3>
+
+                            <p>Next, I soldered the second motor driver in place and connected both drivers to a 3.7V 850mAh battery, rather than powering from the external power supply. I then ran a simple test to see if both wheels would spin forward. The results of this test can be seen below. </p>
+                            <div class="gistcontainer" id="gist6"> 
+                                <script src="https://gist.github.com/mzf8/3b4b337f58109411f0f0234e8140ef6e.js"></script>
+                            </div>
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab4-both-motors.mp4" type="video/mp4">
+                            </video>
+
+                            <h3 class="mb-0">5) Final Layout</h3>
+
+                            <p>The image below shows the final layout of the components mounted onto the robot. </p>
+
+                            <img width=50% height=auto source src="assets/img/lab4-wiring-final.jpg">
+                            </img>
+
+                 
+                        </div>
+                    </div>
+            </div>
+        </section>
+
+        <hr class="m-0" />
+
+            <!-- Lab 5 -->
+            
+            <section class="resume-section" id="lab5">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 5</h2>
+                    <p>Foo</p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Header 1</h3>
+                            <p>Foo </p>
 
 
+                        </div>
+                    </div>
+            </div>
+        </section>
 
-
-            <hr class="m-0" /> 
-        </div>
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <!-- Core theme JS-->
