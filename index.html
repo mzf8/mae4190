@@ -466,6 +466,15 @@
                             <video width="500" height="400" controls>
                                 <source src="assets/lab4-openloop.mp4" type="video/mp4">
                             </video>
+                            <br></br>
+
+                             <h3 class="mb-0">10) Linear Speed Control Function</h3>
+
+                            <p> As a last step, I created a function that would drive the motors based on an input value, u, which ranged from -100 to 100. This function would map the u value to a PWM speed through a linear relationship with a positive y-intercept designed to increase the PWM input above the minimum PWM values found in Section 8. A negative value would correspond to driving the motors backwards, while a positive one would drive forwards. The higher the magnitude of the input, the faster the motors would spin. This type of control is useful for implementing the PID controllers in the next lab. The code for this function can be seen below. </p>
+
+                             <div class="gistcontainer" id="gist6">
+                                   <script src="https://gist.github.com/mzf8/65fa5c61f8ff28c1b9375de573705ee2.js"></script>
+                            </div>
 
 
                                           
