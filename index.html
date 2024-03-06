@@ -351,51 +351,57 @@
             <section class="resume-section" id="lab4">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Lab 4</h2>
-                    <p>Lab 4 focused on setting up the dual motor drivers for our robot and switching from manual control to open loop control. We soldered the motor drivers to the Artemis board and then connected and mounted all components from the previous labs inside the chassis of the robot. </p>
+                    <p>Lab 4 focused on setting up the dual motor drivers for our robot and switching from manual control to open loop control. We first soldered the motor drivers to the Artemis board and then connected and mounted all components from the previous labs inside the chassis of the robot. After this, we calibrated and tested our motors before demonstrating open-loop control of our robot. </p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
                             <h3 class="mb-0">1) Wiring Dual Motor Drivers</h3>
-                            <p>Before we could start soldering the motor drivers to the board, we first had to plan out how we would wire them. The wiring diagram below shows the final setup for this. One key consideration for this step was ensuring that the motor drivers were connected to PWM enabled pins on the Artemis board. After consulting the Artemis specifications, pins 4, A5, 6, and 7 were selected for use. Though the motor drivers we are using are designed to control up to two motors each, we opted to bridge the A and B pins on the motor drivers. This allowed each motor driver to deliver twice as much current to the motors, allowing for faster motor speeds. </p>
+                            <p>Before we could start soldering the motor drivers to the board, we first had to plan out how we would wire them. The wiring diagram below shows the final setup for this. One key consideration for this step was ensuring that the motor drivers were connected to PWM enabled pins on the Artemis board. After consulting the Artemis specifications, pins 4, A5, 6, and 7 were selected for use, as they were PWM enabled and in locations that were physically close to the motor drivers. Though the motor drivers we are using are designed to control up to two motors each, we opted to bridge the A and B pins on each of the motor drivers. This allowed each motor driver to deliver twice as much current to the motors, allowing for faster motor speeds. </p>
                             <img width=75% height=auto source src="assets/img/lab4-wiring-diagram.jpg">
                             </img>
-                            <p>It is also worth discussing battery power in this arrangement. Both motor drivers draw power from one battery, while the Artemis draws power from its own, separate, battery. It was necessary to bridge the Vin and GND terminals of the two motor drivers so that they could be powered from the same battery. The Artemis and motor drivers are powered from different batteries in order to avoid any undesirable effects under load. If they were powered from the same battery, it is possible that the motors would draw too much current under load, causing the Artemis to power down.</p>
+                            <br></br>
+                            <p>It is also worth discussing battery power in this arrangement. Both motor drivers draw power from one battery, while the Artemis draws power from its own, separate, battery. Because of this, it was necessary to bridge the Vin and GND terminals of the two motor drivers so that they could be powered from the same battery. The Artemis and motor drivers are powered from different batteries in order to avoid any undesirable effects under load. If they were powered from the same battery, it is possible that the motors would draw too much current under load, causing the Artemis to power down or reset. Powering the motors and Artemis separately also acts as something of a back-up, so that the Artemis can still remain powered on even if the motor battery is fully discharged.</p>
 
                             <h3 class="mb-0">2) Oscilloscope Testing</h3>
 
-                            <p>Once I had soldered the first motor driver, I wanted to test it using an oscilloscope and power generator to verify that PWM signals were being correctly generated. I connected the Vin and GND pins of my motor driver to an external power supply. I chose to set the power output of this supply to 3.7V in order to replicate the same voltage that would ultimately come from the battery (3.7V 850mAh). After powering the motor driver board, I attached the oscilloscope probe to one of the board's output pins and attached the other end of the probe to the common ground from the power supply. This setup can be seen below. </p>
+                            <p>Once I had soldered the first motor driver, I tested it using an oscilloscope and power generator to verify that the PWM signals were being correctly generated. I connected the Vin and GND pins of my motor driver to an external power supply. I chose to set the power output of this supply to 3.7 V in order to replicate the same voltage that would  come from the battery (3.7 V 850 mAh). Also, by looking at the datasheet for the motor drivers we are using, we can see that the range given for the operating voltage is 2.7-10.8 V, so a voltage of 3.7 V is acceptable. After powering the motor driver board, I attached the oscilloscope probe to one of the board's output pins and attached the other end of the probe to the common ground from the power supply. This setup can be seen in the image below. </p>
+
 
                             <img width=50% height=auto source src="assets/img/lab4-osc-setup.jpg">
                             </img>
+                            <br></br>
 
-                            <p>I then sent a simple PWM signal to the motor drivers. I began by defining each of the pins that were connected and switching the pin mode for these pins to be output. I then used the analogWrite function to send a PWM value of 200 to the motor driver. A code snippet of this can also be seen below.</p>
+                            <p>I then sent a simple PWM signal to the motor driver. I began by defining each of the pins that were connected and switching the pin mode for these pins to be output. I then used the analogWrite function to send a PWM value of 200 to the motor driver. A code snippet of this can be seen below.</p>
                             <div class="gistcontainer" id="gist6">
                                 <script src="https://gist.github.com/mzf8/f6eb8e32041fb0d5ded92354235a1379.js"></script>
                             </div>
 
-                            <p>I then used the osciloscope to verify the output. This can be seen below. The output shows a square wave, as we would except, as well as a high duty cycle because the output is HIGH for most of the period (this makes sense given a PWM input of 200).</p>
+                            <p>I then used the osciloscope to verify the output. This output is shown below. The output from the oscilloscope confirms our expectations in two ways. Firstly, it is a square wave, as we would except for a PWM output; and, secondly, it reflects the high duty cycle (200) that I used as an input, because the output is HIGH for most of the period.</p>
 
                             <img width=50% height=auto source src="assets/img/lab4-osc-reading.jpg">
                             </img>
+                            <br></br>
 
                             <h3 class="mb-0">3) Spinning One Side</h3>
 
-                            <p>After confirming the motor driver was working correctly, I then sodlered it into the car to test it on the actual motors. To do this, I sent another simple PWM command to the robot, except this time I alternated between sending forward and backward commands to test whether the wheels could spin both ways. The code snippet below shows the code used and the video below shows the result of this test. As you can see, the wheels on the robot spin one way, before switching and spinning in the opposite direction. </p>
+                            <p>After confirming the motor driver was working correctly, I then sodlered it into the car to test it on the actual motors. To do this, I sent another simple PWM command to the robot, except this time I alternated between sending forward and backward commands to test whether the wheels could spin both ways. The code snippet below shows the code used and the video below shows the result of this test. As you can see, the wheels on the robot spin one way, before switching and spinning in the opposite direction (this change in direction is also evidenced from the robot rocking back and forth because of its inertia). </p>
                             <div class="gistcontainer" id="gist6"> 
                                 <script src="https://gist.github.com/mzf8/6325d706f328d5523bde61658c89a2a2.js"></script>
                             </div>
                             <video width="500" height="400" controls muted>
                                 <source src="assets/lab4-one-motor.mp4" type="video/mp4">
                             </video>
+                            <br></br>
 
                             <h3 class="mb-0">4) Spinning Both Sides</h3>
 
-                            <p>Next, I soldered the second motor driver in place and connected both drivers to a 3.7V 850mAh battery, rather than powering from the external power supply. I then ran a simple test to see if both wheels would spin forward. The results of this test can be seen below. </p>
+                            <p>Next, I soldered the second motor driver in place and connected both drivers to a 3.7V 850mAh battery, rather than powering them from the external power supply. I then ran a simple test to see if both wheels would spin forward. The results of this test can be seen below. </p>
                             <div class="gistcontainer" id="gist6"> 
                                 <script src="https://gist.github.com/mzf8/3b4b337f58109411f0f0234e8140ef6e.js"></script>
                             </div>
                             <video width="500" height="400" controls>
                                 <source src="assets/lab4-both-motors.mp4" type="video/mp4">
                             </video>
+                            <br></br>
 
                             <h3 class="mb-0">5) Final Layout</h3>
 
@@ -404,6 +410,65 @@
                             <img width=50% height=auto source src="assets/img/lab4-wiring-final.jpg">
                             </img>
 
+                            <h3 class="mb-0">6) Motor Calibration</h3>
+
+                            <p>With the components all soldered and mounted onto the car's chassis, it was now time to test driving the car. The first issue was calibrating the motor drivers. Given that the motors we are using are very cheap and of low quality, both sides may spin at different rates, even when given the same PWM input. This could be due to different amounts of friction in their internal gearboxes, for exampe. The video below shows the result of the car driving forward with the same input PWM to both motors. As you can see in the video, the car veers left. This is because the motors controlling the wheels on the left-hand side of my car had higher friction and therefore spun slower than the right-hand side. </p>
+
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab4-uncalibrated-straight.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+                            <p>In order to address this, I created calibration constants for the left and right motors to scale the PWM inputs such that the motors would spin at the same speeds. After testing various values for these constants, I found that a right_cal value of 0.6 and a left_cal vallue of 1 (i.e., unchanged) helped match the motor speeds better. The code below shows how I accomplished this. </p>
+                            <div class="gistcontainer" id="gist6"> 
+                                <script src="https://gist.github.com/mzf8/f161645dd0034d363010a5f83a6ae407.js"></script>
+                            </div>
+                            <p> Finally, the video below shows the car moving in a (relatively) straight line after the motor inputs had been scaled, as described above. While the car can drive straight for distances of ~8ft, it does still start to veer off at larger distances, as can be seen towards the end of the video. Again, this is likely due to the low-quality of these motors. However, this isn't overly concerning because once we implement our PID controllers, any small deviations like this can be corrected for. </p>
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab4-calibrated-straight.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <p> This veering behaviour can be explained in terms of the different levels of internal friction in each of the motors. Even when calibrated to run at the same speeds, I found that the right motor would freely spin for longer than the left motor once they were both shut off. The video below shows both motors spinning (at approximately the same speed, thanks to calibration) and then being shut off. As you can see, the right motor continues spinning for significantly longer than the left one.</p>
+
+                             <video width="500" height="400" controls>
+                                <source src="assets/lab4-freespin-test.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <h3 class="mb-0">7) Motor Issues During Testing</h3>
+
+                            <p>While calibrating my motors, I initially ran into an issue where my left motor was spinning extremely slowly, which significantly limited the maximum speed of the car. At first, I thought this might just have been a result of the poor quality of the motors but, after further testing, I realized that some of my soldered connections on the left motor driver pads did not have enough solder, which was limiting the amount of current that could flow to the motors. After applying more solder to these pads, I was able to achieve normal motor speeds and carry out the calibration described in Section 6, above. </p>
+
+                            <h3 class="mb-0">8) Lower Limit PWM Values</h3>
+
+                            <p>I also wanted to find the minimum PWM values required for each of the following behaviours: driving forwards, driving backwards, and on-axis turns in each direction. That is, what minimum PWM input is required for the wheels to spin fast enough to overcome friction and perform each of these behaviours. After repeatedly testing different values, I found the following approximate lower limits:</p>
+                                <ul>
+                                    <li>Forwards: ~55</li>
+                                    <li>Backwards: ~55</li>
+                                    <li>On-Axis Spin Clockwise (Left Motor Forwards): ~160</li>
+                                    <li>On-Axis Spin Anti-Clockwise (Right Motor Forwards): ~165</li>
+                                </ul>
+
+                            <h3 class="mb-0">9) Open-Loop Control Over Bluetooth</h3>
+
+                            <p>Finally, I wanted to test open-loop control of the robot including turns and both backwards and forwards motion. Though not strictly required, I decided to test sending these commands to the robot via Bluetooth, rather than hard-coding a particular path into the robot. In order to do this, I defined three new commands: FORWARD, BACKWARD, and TURN90R. The first two would drive the robot in the named direction for 0.5 seconds, and the second one would turn the robot approximately 90 degrees to the right about its axis. Following from what we had learnt in the previous labs, I implemented flags that were triggered once the relevant command was called, which would then run code in the main loop to move the robot as needed. The first code snippet below shows the code in the FORWARD case, which triggers the flag when the command is called, and the snippet after that shows the corresponding logic in the main loop. In my actual implementation, this concept was expanded to also include the BACKWARD and TURN90R commands.</p>
+                            <div class="gistcontainer" id="gist6"> 
+                                   <script src="https://gist.github.com/mzf8/359f17e57689ed74f790754371e34d31.js"></script>
+                            </div>
+                            <div class="gistcontainer" id="gist6"> 
+                                   <script src="https://gist.github.com/mzf8/b53282bae956d9a3a16e7b8028b5d9bd.js"></script>
+                            </div>
+
+                            <p> After implementing this code, I was able to send commands to the robot via bluetooth from the Jupyter environment, as seen in the image below.</p>
+                            <img width=100% height=auto source src="assets/img/lab4-jupyter-commands.png">
+                            </img>
+                            <p>The robot's response to these commands can be seen in the video below.</p>
+                            <video width="500" height="400" controls>
+                                <source src="assets/lab4-openloop.mp4" type="video/mp4">
+                            </video>
+
+
+                                          
                  
                         </div>
                     </div>
