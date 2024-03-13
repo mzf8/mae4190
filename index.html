@@ -192,9 +192,10 @@
 
                             <h3 class="mb-0">Discussion & Reflection</h3>
                             <p> Overall, Lab 1 offered an invaluable insight into the workings of bluetooth communication, as well as providing an understanding of how sending data is not always just a matter of sending the data - there can be faster or more efficient ways within this. </p>
-
+                </div>
             </section>
             <hr class="m-0" />
+
             <!-- Lab 3 -->
             <section class="resume-section" id="lab2">
                 <div class="resume-section-content">
@@ -274,9 +275,10 @@
                                 <source src="assets/lab3-stunt.mp4" type="video/mp4">
                             </video>
                              
-
+                 </div>           
             </section>
             <hr class="m-0" />
+
             <!-- Lab 3 -->
             <section class="resume-section" id="lab3">
                 <div class="resume-section-content">
@@ -343,6 +345,8 @@
                             </img>
                         </div>
                     </div>
+                </div>
+            </section>
 
             <hr class="m-0" />
 
@@ -474,10 +478,7 @@
 
                              <div class="gistcontainer" id="gist6">
                                    <script src="https://gist.github.com/mzf8/65fa5c61f8ff28c1b9375de573705ee2.js"></script>
-                            </div>
-
-
-                                          
+                            </div>          
                  
                         </div>
                     </div>
@@ -491,17 +492,40 @@
             <section class="resume-section" id="lab5">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Lab 5</h2>
-                    <p>Foo</p>
+                    <p>The purpose of Lab 5 was to set up a position-based feedback controller on our robots using data from the ToF sensors on our robot. I opted to implement a basic P controller on my robot at first and then branched into a PD controller once I got this working. Given that the main controller loop runs more quickly than the ToF sensor can return data, I also implemented linear extrapolation to extrapolate the sensor values beetween readings. </p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">1) Header 1</h3>
-                            <p>Foo </p>
+                            <h3 class="mb-0">1) Prelab - Setting Up Debugging & Data Logging Infrastucture</h3>
+                            <p>A key consideration in this lab was to have a strong debugging infrastructure set-up. In this case, that involved logging and storing data on the robot in real-time and then sending that data to my computer over Bluetooth, where I could perform analysis and post-processing in a Jupyter environment. I opted to store several important pieces of data in arrays for debugging: </p>
+                            <ul>
+                                <li>The control input from the controller, u</li>
+                                <li>PWM inputs for both the left and right motors</li>
+                                <li>"Raw" Time of Flight sensor readings</li>
+                                <li>Extrapolated Time of Flight sensor readings</li>
+                                <li>Time stamps for all of these pieces of data</li>
+                            </ul>
+
+                            <p>In order to do this, I created an array for each separate piece of data I wanted to store. Within each iteration of the main control loop, I would then call functions that collected the relevant pieces of data and stored them in their respective arrays. I would then increment the value of my array pointer so that in the next iteration, I would store my new values in the next empty space in the array. I would continue this process until my arrays were full, at which point I would stop PID control on the robot and send all of the data to my computer. For the purposes of this testing, I set my array size to a relatively small value of 1000. While I could have chosen a larger array size to collect data for a longer amount of time without overflowing the onboard memorty, using a small value helped ensure relatively fast tests and data-collection, as the behaviours I wanted to capture would generally have taken place within this timespan.</p>
+
+                            <p> The code snippet below shows some rough pseudo code for the structure of this main loop. Note that this pseudocode is very high-level and shows only the structure of this rather than my actual implementation. In practice, the actual logic of exactly how I store some of the values within the functions, particularly in the case of the ToF values, was more complex. This will be explained in greater detail when discussing extrapolation</p>
+
+                            <div class="gistcontainer" id="gist6"> 
+                                <script src="https://gist.github.com/mzf8/50988e8b2bff4b28251dff6c4fba63b3.js"></script>
+                            </div> 
+
+                            <p> On the Python side of things, I implemented the following notification handler to "listen" for data being sent over bluetooth. Data is sent from the Arduino in a comma separated string - e.g. "1,2,3" - where each number represents a value from a different array. The values are always sent in the same order so parsing them is easy. One minor detail to note about my implementation is that the "distance_front_raw" array (and its companion "times" array) only store values when a real sensor reading is collected, while "distance_front_extrap" records both the real values and the extrapolated values between them. Logicallly, this means that "distance_front_array" will reach the maximum array size long before distance_front_raw. So, there will be some 0 values in both distance_front_raw and times that need to be filtered out for plotting. The code snippet below shows my notifcation handler. </p>
+
+                            <div class="gistcontainer" id="gist6">  
+                                <script src="https://gist.github.com/mzf8/dd42a43df25c755f9b16e6f9ce36f2c5.js"></script>
+                            </div> 
 
 
                         </div>
                     </div>
             </div>
         </section>
+
+
 
         <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
