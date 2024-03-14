@@ -563,11 +563,27 @@
                             </img>
                             <br></br>
 
+                            <h4 class="mb-0">Extrapolation - Error Using Wrong Slope</h2>
+                            <p> When I first tried implementing the extrapolation algorithm, there was an error in my implementation that caused the extrapolation line to have a stair-like shape (see image below). After some initial debugging, I found that the problem was that I was accidentally using the extrapolated values to calculate slope, rather than using the "real" ones. After fixing this, I was able to get my extrapolation to work (see image above).</p>
+
+                            <img width=50% height=auto source src="assets/img/lab5-wrong-slope.png">
+                            </img>
+
+
+
+
                             <h3 class="mb-0">5) Motor Input</h3>
                             <p> Since I scaled my u values from -100 to 100, I wanted to map these values to sensible PWM values rather than feeding them in as raw values. A u input of magnitude 100 would correspond to full speed, while 0 would correspond to not moving (and negative values correspond to backwards motion). To do this, I created a simple linear relationship between the two points: (u = 0, PWM = 50) and (u=100, PWM = 255). To get PWM = 2.05u + 50. In practice, I had to play around with these values a bit to get the relationship right, as well as set different values for the y-intercept for backwards and forwards motion. Not that a U input of 0 corresponds to a non-zero PWM input because of the deadband of the motors.</p>
 
                             <h3 class="mb-0">6) Adding Derivative Control</h3>
-                            <p> Adding derivative control to the controller from here was fairly straightforward. Four new variables were defined: current_error, current_time, previous_error, and previous_time. These were updated within the loop and used to calculate de/dt for each loop iteration. Ordinarily, derivative kick might be a problem here but since we are not, currently, changing the setpoint during the robots' operation, this is not something we have to worry about here. The derivative controller helps to minimise overshoot, as well as minimising disturbances and unwanted oscillations at steady state - generally, it acts as a dampener on the system, acting against changes.</p>
+                            <p> Derivative control works by adding a control input term that is proportional to the rate of change of the error of the system - i.e. u = Kd*(de/dt). In this way, it acts as a dampener on the system, acting against changes. The derivative controller helps to minimise overshoot, as well as minimising disturbances and unwanted oscillations at steady state. After adding derivative control to my controller, the control input, u, is calculated as follows: </p> 
+                            <div style="text-align: center;">
+                                <img width=30% height=auto source src="assets/img/lab5-pd-eq.png"">
+                                </img>
+                             </div>
+
+                            </p>Adding derivative control was fairly straightforward once the proportional controller had been implemented. Four new variables were defined: current_error, current_time, previous_error, and previous_time. These were updated within the loop and used to calculate de/dt for each loop iteration. Ordinarily, derivative kick might be a problem here but since we are not, currently, changing the setpoint during the robots' operation, this is not something we have to worry about here. If I did have to address this issue though, I would just use the time derivative of the sensor reading itself rather than the error. In this way, any change in the setpoint is not reflected in the control input. </p>
+                    
 
                             <h3 class="mb-0">7) Tuning The Controller</h3>
                             <p> Given the range of motor input values (55-255) and the maximum distance that can be recorded by the ToF sensor (4000mm), we would expect Kp to be somewhere on the order of 255/4000 = ~0.06.</p>
