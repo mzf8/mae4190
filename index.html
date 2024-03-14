@@ -492,11 +492,11 @@
             <section class="resume-section" id="lab5">
                 <div class="resume-section-content">
                     <h2 class="mb-5">Lab 5</h2>
-                    <p>The purpose of Lab 5 was to set up a position-based feedback controller on our robots using data from the ToF sensors on our robot. I opted to implement a basic P controller on my robot at first and then branched into a PD controller once I got this working. Given that the main controller loop runs more quickly than the ToF sensor can return data, I also implemented linear extrapolation to extrapolate the sensor values beetween readings. </p>
+                    <p>The purpose of Lab 5 was to set up a position-based feedback controller on our robots using data from the ToF sensors. I opted to implement a basic P controller on my robot at first and then branched into a PD controller once I got this working. Given that the main controller loop runs more quickly than the ToF sensor can return data, I also implemented linear extrapolation to extrapolate the sensor values between readings. </p>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">1) Prelab - Setting Up Debugging & Data Logging Infrastucture</h3>
-                            <p>A key consideration in this lab was to have a strong debugging infrastructure set-up. In this case, that involved logging and storing data on the robot in real-time and then sending that data to my computer over Bluetooth, where I could perform analysis and post-processing in a Jupyter environment. I opted to store several important pieces of data in arrays for debugging: </p>
+                            <h3 class="mb-0">1) Prelab - Setting Up Debugging & Data Logging Infrastructure</h3>
+                            <p>A key consideration in this lab was to have a strong debugging infrastructure set-up. In this case, that involved logging and storing data on the robot in real-time and then sending that data to my computer over Bluetooth, where I could perform analysis and post-processing. I chose to store the following pieces of data in arrays for debugging: </p>
                             <ul>
                                 <li>The control input from the controller, u</li>
                                 <li>PWM inputs for both the left and right motors</li>
@@ -505,21 +505,17 @@
                                 <li>Time stamps for all of these pieces of data</li>
                             </ul>
 
-                            <p>In order to do this, I created an array for each separate piece of data I wanted to store. Within each iteration of the main control loop, I would then call functions that collected the relevant pieces of data and stored them in their respective arrays. I would then increment the value of my array pointer so that in the next iteration, I would store my new values in the next empty space in the array. I would continue this process until my arrays were full, at which point I would stop PID control on the robot and send all of the data to my computer. For the purposes of this testing, I set my array size to a relatively small value of 1000. While I could have chosen a larger array size to collect data for a longer amount of time without overflowing the onboard memory, using a small value helped ensure relatively fast tests and data-collection, as the behaviours I wanted to capture would generally have taken place within this timespan.</p>
+                            <p>In order to do this, I created an array for each separate piece of data I wanted to store. Within each iteration of the main control loop, I would then call functions that collected the relevant pieces of data and stored them in their respective arrays. I would continue this process until my arrays were full, at which point I would stop PID control on the robot and send all of the data to my computer. For the purposes of this testing, I set my array size to a relatively small value of 1000. While I could have chosen a larger array size to collect data for a longer amount of time without overflowing the onboard memory, using a small value helped ensure relatively fast tests and data-collection, as the behaviours I wanted to capture would generally have taken place within this timespan.</p>
 
-                            <p> The code snippet below shows some rough pseudo code for the structure of this main loop. Note that this pseudocode is very high-level and shows only the structure of this rather than my actual implementation. In practice, the actual logic of exactly how I store some of the values within the functions, particularly in the case of the ToF values, was more complex. This will be explained in greater detail when discussing extrapolation. </p>
+                            <p> The code snippet below shows some rough pseudo code for the structure of this main loop. In practice, the actual logic of exactly how I store some of the values within the functions, particularly in the case of the ToF values, was more complex. This will be explained in greater detail when discussing extrapolation. </p>
 
                             <div class="gistcontainer" id="gist6"> 
                                 <script src="https://gist.github.com/mzf8/50988e8b2bff4b28251dff6c4fba63b3.js"></script>
                             </div>
 
-                            <p> The data is then sent from the Artemis board once the arrays are full. Data is sent only at the end, rather than in real time, so as to speed up execution of the loop. </p>
+                            <p> The data is then sent from the Artemis board once the arrays are full. Data is only sent at the end, rather than in real time, so as to speed up execution of the loop. </p>
 
-                            <div class="gistcontainer" id="gist6">  
-                                <script src="https://gist.github.com/mzf8/70277f6e6b72bda32ecfb1a119295b42.js"></script>
-                            </div>  
-
-                            <p> On the Python side of things, I implemented the following notification handler to "listen" for data being sent over bluetooth. Data is sent from the Arduino in a comma separated string - e.g. "1,2,3" - where each number represents a value from a different array. The values are always sent in the same order so parsing them is easy. One minor detail to note about my implementation is that the "distance_front_raw" array (and its companion "times" array) only store values when a real sensor reading is collected, while "distance_front_extrap" records both the real values and the extrapolated values between them. Logically, this means that distance_front_array will reach the maximum array size long before distance_front_raw. So, there will be some 0 values in both distance_front_raw and times that need to be filtered out before plotting. The code snippet below shows my notifcation handler. </p>
+                            <p> On the Python side of things, I implemented the following notification handler to "listen" for data being sent over bluetooth. Data is sent from the Arduino in a comma separated string - e.g. "1,2,3" - where each number represents a value from a different array. The values are always sent in the same order so parsing them is easy. One minor detail to note about my implementation is that the "distance_front_raw" array (and its companion "times" array) only store values when a real sensor reading is collected, while "distance_front_extrap" records both the real values and the extrapolated values between them. Logically, this means that distance_front_array will reach the maximum array size long before distance_front_raw. So, there will be some 0 values in both distance_front_raw and times that need to be filtered out before plotting. The code snippet below shows my notification handler. </p>
 
                             <div class="gistcontainer" id="gist6">  
                                 <script src="https://gist.github.com/mzf8/dd42a43df25c755f9b16e6f9ce36f2c5.js"></script>
@@ -531,7 +527,7 @@
                                 <script src="https://gist.github.com/mzf8/424fb5bc2351f2249a65f913bd4df662.js"></script>
                             </div> 
 
-                            <p>I also implemented a START_PID command, which would activate PID control within the mainloop, as well as resetting and initialising any variables for this. Most of the variables and steps taken here are self-explanatory. One thing to note is clearing the lists at the end by filling them with zeros. Usually this isn't necesary since you just write over the old values but since the number of "real" sensor readings recorded in a given run is not consistent, I found that in some cases there would be issues if the lists weren't cleared. E.g. imagine in one run there were 9 values recorded in dist_front_raw but in the next there were only 8, this would mean the 9th value from the previous run would not be overwritten and would remain.</p>
+                            <p>I also implemented a START_PID command, which would activate PID control within the mainloop, as well as resetting and initialising any variables for this. Most of the variables and steps taken here are self-explanatory. One thing to note is clearing the lists at the end by filling them with zeros. Usually this isn't necessary since you just write over the old values but since the number of "real" sensor readings recorded in a given run is not consistent, I found that in some cases there would be issues if the lists weren't cleared. E.g. imagine in one run there were 9 values recorded in dist_front_raw but in the next there were only 8, this would mean the 9th value from the previous run would not be overwritten and would remain.</p>
                             <div class="gistcontainer" id="gist6">  
                                 <script src="https://gist.github.com/mzf8/2135fbaa724fa1a1a5ee42c7b3722712.js"></script>
                             </div> 
@@ -540,10 +536,10 @@
                             <p>The goal of this lab was to design a controller that would have the robot drive as fast as possible towards the wall before stopping at a given setpoint. In order to do this, I first implemented a simple proportional controller. A proportional controller works by providing a control input that is proportional to the error. If the error is large and positive (i.e., the robot is far from the wall), the control input, u, will be large and positive, causing the robot to drive forwards. Once the START_PID command is sent, the PID_pos_flag variable is set to true and the PID control loop begins to run. The structure of this controller is fairly simple: </p>
                             <ol>
                                 <li> Get a distance reading from the ToF sensor</li>
-                                <li> Work out the error between your setpoint and this reaeding</li>
+                                <li> Work out the error between your setpoint and this reading</li>
                                 <li> Muliply this error by Kp to get your control input, u</li>
                                 <li> Clamp u such that: -100 <= u <= 100 </li>
-                                <li> Pass u into the drive_motors_same function, where it is convertde into a PWM input to drive the motors</li>
+                                <li> Pass u into the drive_motors_same function, where it is converted into a PWM input to drive the motors</li>
                             </ol>
                             <p>The code snippet below shows this implementation in my main loop.</p>
 
@@ -552,7 +548,7 @@
                             </div> 
 
                             <h3 class="mb-0">4) Extrapolating Between Readings</h3>
-                            <p>By post-processing data from the robot, I was able to determine that the ToF sensor has a sampling rate of ~10 Hz, while the main loop runs at a frequency of about~130 Hz. Given that the main control loop runs at a higher frequency than the ToF sensor's sampling rate, there will be some iterations where the ToF sensor does not have a value ready. In this case, the robot moves very sporadically and is unable to react to obstacles quickly. In order to mitigate this problem, a simple extrapolation is done using the last two "real" ToF sensors obtained. The slope between these two points is calculated and is then assumed to be constant until the next sensor reeading comes in. One key factor to this solution is that extrapolation cannot be carried out until the first two real data points have been reccordeed. My implementation waits until these first two readings come in before beginning. The code snippet below shows how this works. </p>
+                            <p>By post-processing data from the robot, I was able to determine that the ToF sensor has a sampling rate of ~10 Hz, while the main loop runs at a frequency of about~130 Hz. Given that the main control loop runs at a higher frequency than the ToF sensor's sampling rate, there will be some iterations where the ToF sensor does not have a value ready. In this case, the robot moves very sporadically and is unable to react to obstacles quickly. In order to mitigate this problem, a simple extrapolation is done using the last two "real" ToF sensors obtained. The slope between these two points is calculated and is then assumed to be constant until the next sensor reeading comes in. One key factor to this solution is that extrapolation cannot be carried out until the first two real data points have been recorded. My implementation waits until these first two readings come in before beginning. The code snippet below shows how this works. </p>
 
                             <div class="gistcontainer" id="gist6">  
                                <script src="https://gist.github.com/mzf8/7091fb6d4f183004ffbe1531e4bff2e7.js"></script>
@@ -563,17 +559,9 @@
                             </img>
                             <br></br>
 
-                            <h4 class="mb-0">Extrapolation - Error Using Wrong Slope</h2>
-                            <p> When I first tried implementing the extrapolation algorithm, there was an error in my implementation that caused the extrapolation line to have a stair-like shape (see image below). After some initial debugging, I found that the problem was that I was accidentally using the extrapolated values to calculate slope, rather than using the "real" ones. After fixing this, I was able to get my extrapolation to work (see image above).</p>
-
-                            <img width=50% height=auto source src="assets/img/lab5-wrong-slope.png">
-                            </img>
-
-
-
 
                             <h3 class="mb-0">5) Motor Input</h3>
-                            <p> Since I scaled my u values from -100 to 100, I wanted to map these values to sensible PWM values rather than feeding them in as raw values. A u input of magnitude 100 would correspond to full speed, while 0 would correspond to not moving (and negative values correspond to backwards motion). To do this, I created a simple linear relationship between the two points: (u = 0, PWM = 50) and (u=100, PWM = 255). To get PWM = 2.05u + 50. In practice, I had to play around with these values a bit to get the relationship right, as well as set different values for the y-intercept for backwards and forwards motion. Not that a U input of 0 corresponds to a non-zero PWM input because of the deadband of the motors.</p>
+                            <p> Since I scaled my u values from -100 to 100, I wanted to map these values to sensible PWM values rather than feeding them in as raw values. A u input of magnitude 100 would correspond to full speed, while 0 would correspond to not moving (and negative values correspond to backwards motion). To do this, I created a simple linear relationship between the two points: (u = 0, PWM = 50) and (u=100, PWM = 255). To get the equation: PWM = 2.05u + 50. In practice, I had to play around with these values a bit to get the relationship right, as well as set different values for the y-intercept for backwards and forwards motion. Note that a u input of 0 corresponds to a non-zero PWM input because of the deadband of the motors.</p>
 
                             <h3 class="mb-0">6) Adding Derivative Control</h3>
                             <p> Derivative control works by adding a control input term that is proportional to the rate of change of the error of the system - i.e. u = Kd*(de/dt). In this way, it acts as a dampener on the system, acting against changes. The derivative controller helps to minimise overshoot, as well as minimising disturbances and unwanted oscillations at steady state. After adding derivative control to my controller, the control input, u, is calculated as follows: </p> 
@@ -588,19 +576,68 @@
                             <h3 class="mb-0">7) Tuning The Controller</h3>
                             <p> Given the range of motor input values (55-255) and the maximum distance that can be recorded by the ToF sensor (4000mm), we would expect Kp to be somewhere on the order of 255/4000 = ~0.06.</p>
 
-                            <p> I began by setting Kd = 0 and only experimenting with the proportional controller. If Kp was too low the system would not generate a large enough control input to drive the motors forwards or, if it could, it would move very slowly, having a long rise time. If it was too large, the system would overshoot the setpoint and experience oscillations from being overly sensitive to error. After iterating on different values, I settled on a Kp value of 0.045. This value was approximately the maximum Kp value that I could use without experiencing significant overshoot or oscillations. The image below shows a graph of data from one run with this value. </p>
+                            <h4 class="mb-0">Kp = 0.03</h4>
+                            <p> I began by setting Kd = 0 and only experimenting with the proportional controller. If Kp was too low the system would not generate a large enough control input to drive the motors forwards or, if it could, it would move very slowly, having a long rise time. If it was too large, the system would overshoot the setpoint and experience oscillations from being overly sensitive to error. After iterating on different values, I settled on a Kp value of 0.03. This value was approximately the maximum Kp value that I could use without experiencing significant overshoot or oscillations. The image below shows a graph of data from one run with this value. </p>
                             <img width=50% height=auto source src="assets/img/lab5-Kp-only.png">
                             </img>
                             <br></br>
 
-                             <p> Next, I tried adding in derivative control in order to minimise the overshoot and oscillations from my proportional controller. Here, I experimented with different values, looking for the minimum value that would produce the effects I was looking for. </p>
+                            <p> Next, I tried adding in derivative control in order to minimise the overshoot and oscillations from my proportional controller. Here, I experimented with different values, looking for the minimum value that would produce the effects I was looking for. </p>
+                            <h4 class="mb-0">Kd Too Small - Kd = 5</h4>
+                            <p> If Kd was too small, it would not have a large enough effect and the system would overshoot. </p>
+                            <img width=50% height=auto source src="assets/img/lab5-KpandKd-small.png">
+                            </img>
+                            <br></br>
 
-                             <p> [ADD TESTS W/ Kd TOO] </p>
+                            <h4 class="mb-0">Kd Too Large - Kd = 9</h4>
+                            <p> If Kd was too large, it would cause the system to undershoot. </p>
+                            <img width=50% height=auto source src="assets/img/lab5-KpandKd-large.png">
+                            </img>
+                            <br></br>
+                             
+                            <h3 class="mb-0">7) Final Values & Trials</h3>
 
-                            <h3 class="mb-0">7) Maximum Linear Speed & Trials</h3>
+                            <p> After continuing to tune my value for Kd, I found that a value of 7 was optimal for my system. The graphs and videos below show results from  my system over three trials. In each trial I started the robot at a different distance from the wall ("Medium", "Long", "Short").  </p>
+                            <ul>
+                                <li>Kp = 0.03</li>
+                                <li>Kd = 7</li>
+                            </ul>
+
+                            <p> While the system performed well in all cases, I found that the starting distance from the wall did have an impact on the system dynamics, particularly with overshoot and undershoot, as it affects the robots' acceleration. By taking the maximum slope of the distance vs time graphs below, I was able to find that the maximum velocity of the robot was approx. 0.5m.</p>
 
 
-                            <p> [NEED TO ADD TRIALS] </p>
+                            <h4 class="mb-0">Trial 1 - "Medium" Distance</h4>
+                            <p> The system performed optimally at this distance.</p>
+                            
+                            <img width=50% height=auto source src="assets/img/lab5-KpandKd-final1.png">
+                            </img>
+                            <br></br>
+                            <video width=50% height=auto controls>
+                                <source src="assets/lab5-trial1.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <h4 class="mb-0">Trial 2 - "Short" Distance</h4>
+                            <p> When starting closer to the wall, the system had difficulty reaching the setpoint, though it did eventually reach it towards the end. This is because, when starting from closer distances, the robot has less momentum as it comes close to the wall.</p>
+                            
+                            <img width=50% height=auto source src="assets/img/lab5-KpandKd-final2.png">
+                            </img>
+                            <br></br>
+                            <video width=50% height=auto controls>
+                                <source src="assets/lab5-trial2.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <h4 class="mb-0">Trial 3 - "Long" Distance</h4>
+                            <p> When starting further away, the opposite is true - the system now has more momentum so overshoot is more likely.</p>
+                            
+                            <img width=50% height=auto source src="assets/img/lab5-KpandKd-final3.png">
+                            </img>
+                            <br></br>
+                            <video width=50% height=auto controls>
+                                <source src="assets/lab5-trial3.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
 
                         
                         </div>
