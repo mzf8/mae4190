@@ -644,6 +644,64 @@
                     </div>
             </div>
         </section>
+        <hr class="m-0" />
+
+            <!-- Lab 6 -->
+            
+            <section class="resume-section" id="lab6">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 6</h2>
+                    <p>The purpose of Lab 6 was to set up an orientation feedback controller on our robots using data from the on-board IMU. In order to do this, I implemented a PD controller on my robot. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Prelab - Setting Up Debugging & Data Logging Infrastructure</h3>
+                            <p>As in Lab 5, it was important to have a strong debugging infrastructure set-up. This involved logging data in real-time on the robot and then sending it over Bluetooth to my computer for analysis. For the sake of brevity, I will only describe which variables I decided to log, as more detailed account of the methodology can be found in Lab 5 above. The variables I opted to store for debugging purposes were: </p>
+                            <ul>
+                                <li>Yaw from Gyroscope </li>
+                                <li>PWM inputs for both the left and right motors</li>
+                                <li>Control signal, u, as well as each of its individual components: P, I, and D.</li>
+                                <li>Time stamps for all of data</li>
+                            </ul>
+
+                            <h3 class="mb-0">2) Key Considerations </h3>
+                            <p>Before begining to implement the PD controller, there were some key points to consider. </p>
+
+                            <h4>Sensor Limitations</h4>
+
+                            <p> The first question was whether there are any limitatons of the sensor to be aware of. In the case of this IMU, there is a maximum rotational velocity that the gyroscope can read. By default, this value is 250 dps (degrees per second), which is not sufficient for some of the fast turns carried out. In order to address this, the maximum rotational speed can be re-configured - I chose a value of 1000 dps, which was more than sufficient for the speeds of the robot. There are also options to configure the sensor to eliminate any constant bias that might exist in the readings but, given that I did not find any issues with bias in my sensor readings, I decided not to use these. </p>
+
+                            <h4> Derivative Term - Low Pass Filter</h4>
+
+                            <p> Another important set of questions concerned the use of the derivative term. Namely, should a Low Pass Filter be included on this term. While this is something that I experimented with, I found that adequately filtering out the noise on this term would add too much delay to my signal, which would inhibit the ability of my controller to rapidy react to changes. Instead, I chose to use a relatively small value of K_d, so that small changes due to noise would not adversely impact the trajectory of the robot but would still add enough damping to be effective. In practice, I found this approach worked very well, as demonstrated below.  </p>
+
+                            <h4> Codebase - Changing Setpoint While Robot Runs</h4>
+
+                            <p> I also edited my code from Lab 5 so that I could send both K values and my setpoint over bluetooth while the robot was running, this allowed me to change the robot's setpoint in real-time, which is crucial for implementing more complex behaviours later. The code snippet below shows this functionality. </p>
+                            <div class="gistcontainer" id="gist6">  
+                               <script src="https://gist.github.com/mzf8/9ec8ce19552ba235d15316f8f7bef27a.js"></script>
+                            </div> 
+
+                            <h3 class="mb-0">3) PD Controller Setup & Tuning </h3>
+                            <p>...</p>
+
+                            <h3 class="mb-0">4) Trials </h3>
+                            <p> ... </p>
+
+                            <h4> One Setpoint</h4>
+                            <p> ... </p>
+
+                            <h4> Multiple Setpoints</h4>
+                            <p> ... </p>
+
+                            <h4> Disturbance Response</h4>
+                            <p> ... </p>
+
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
 
 
 
