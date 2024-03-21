@@ -655,12 +655,12 @@
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
                             <h3 class="mb-0">1) Prelab - Setting Up Debugging & Data Logging Infrastructure</h3>
-                            <p>As in Lab 5, it was important to have a strong debugging infrastructure set-up. This involved logging data in real-time on the robot and then sending it over Bluetooth to my computer for analysis. For the sake of brevity, I will only describe which variables I decided to log, as more detailed account of the methodology can be found in Lab 5 above. The variables I opted to store for debugging purposes were: </p>
+                            <p>As in Lab 5, it was important to have a strong debugging infrastructure set-up. This involved logging data in real-time on the robot and then sending it over Bluetooth to my computer for analysis. For the sake of brevity, I will only describe which variables I decided to log, as a more detailed account of the methodology I used can be found in Lab 5 above. The variables I opted to store for debugging purposes were: </p>
                             <ul>
                                 <li>Yaw from Gyroscope </li>
                                 <li>PWM inputs for both the left and right motors</li>
                                 <li>Control signal, u, as well as each of its individual components: P, I, and D.</li>
-                                <li>Time stamps for all of data</li>
+                                <li>Time stamps for all of the data</li>
                             </ul>
 
                             <h3 class="mb-0">2) Key Considerations </h3>
@@ -668,15 +668,19 @@
 
                             <h4>Sensor Limitations</h4>
 
-                            <p> The first question was whether there are any limitatons of the sensor to be aware of. In the case of this IMU, there is a maximum rotational velocity that the gyroscope can read. By default, this value is 250 dps (degrees per second), which is not sufficient for some of the fast turns carried out. In order to address this, the maximum rotational speed can be re-configured - I chose a value of 1000 dps, which was more than sufficient for the speeds of the robot. There are also options to configure the sensor to eliminate any constant bias that might exist in the readings but, given that I did not find any issues with bias in my sensor readings, I decided not to use these. </p>
+                            <p> The first question was whether there are any limitatons of the sensor to be aware of. In the case of this IMU, there is a maximum rotational velocity that the gyroscope can read. By default, this value is 250 dps (degrees per second), which is not sufficient for some of the fast turns carried out. In order to address this, the maximum rotational speed can be re-configured. I chose a value of 1000 dps, which was more than sufficient. There are also options to configure the sensor to eliminate any constant bias that might exist in the readings but, given that I did not find any issues with bias in my sensor readings, I decided not to use these. The code below shows how I was able to reconfigure the sensor speed for this purpose.</p>
+                            <div class="gistcontainer" id="gist6">  
+                               <script src="https://gist.github.com/mzf8/3f01c2b3153395c03978a4bf5523dedf.js"></script>
+                            </div>
+                            
 
                             <h4> Derivative Term - Low Pass Filter</h4>
 
-                            <p> Another important set of questions concerned the use of the derivative term. Namely, should a Low Pass Filter be included on this term. While this is something that I experimented with, I found that adequately filtering out the noise on this term would add too much delay to my signal, which would inhibit the ability of my controller to rapidy react to changes. Instead, I chose to use a relatively small value of K_d, so that small changes due to noise would not adversely impact the trajectory of the robot but would still add enough damping to be effective. In practice, I found this approach worked very well, as demonstrated below.  </p>
+                            <p> Another important set of questions concerned the use of the derivative term. Namely, should a Low Pass Filter be included on this term. While this is something that I experimented with, I found that adequately filtering out the noise on this term would add too much delay to my signal, which would inhibit the ability of my controller to rapidy react to changes. Instead, I chose to use a relatively small value of K_d, so that small changes due to noise would not adversely impact the trajectory of the robot but would still add enough damping to be effective. In practice, I found this approach worked very well, as demonstrated in the trials below.  </p>
 
                             <h4> Codebase - Changing Setpoint While Robot Runs</h4>
 
-                            <p> I also edited my code from Lab 5 so that I could send both K values and my setpoint over bluetooth while the robot was running, this allowed me to change the robot's setpoint in real-time, which is crucial for implementing more complex behaviours later. The code snippet below shows this functionality. </p>
+                            <p> I also edited my code from Lab 5 so that I could send both K values and my setpoint over bluetooth while the robot was running. This allowed me to change the robot's setpoint in real-time, which is crucial for implementing more complex behaviours later. The code snippet below shows how I implemented this functionality on the Artemis. To send this information to the Artemis over bluetooth I would just run a function like: ble.send_command(CMD.SET_PID_ANGLE, "1|2|3|90") </p>
                             <div class="gistcontainer" id="gist6">  
                                <script src="https://gist.github.com/mzf8/9ec8ce19552ba235d15316f8f7bef27a.js"></script>
                             </div> 
@@ -684,12 +688,11 @@
                             <h3 class="mb-0">3) PD Controller Setup & Tuning </h3>                            
 
                             <h4> P Control - Kp = 0.7 </h4>
-                            <p>As in Lab 5, I began by implementing a simple P Controller and tuned the value until reaching the maximum value possible that didn't introduce significant overshoot. Getting the P value as high as possible without adding overshoot is important, as it decreases the system's rise time, leading to a faster control response. After experimenting with multiple values, I found that a P value of 0.7 worked best. The graphs below show the results of a test run with a setpoint of 180 degrees with only P control.</p>
+                            <p>As in Lab 5, I began by implementing a simple P Controller and tuned the value until reaching the maximum value possible that didn't introduce significant overshoot or oscillations. Getting the P value as high as possible without adding overshoot is important, as it decreases the system's rise time, leading to a faster control response. After experimenting with multiple values, I found that a P value of 0.7 worked best. The graphs below show the results of a test run with a setpoint of 180 degrees using only P control.</p>
                             <img width=50% height=auto source src="assets/img/lab6-Ponly-test.png">
                             </img>
                             <br></br>
-                            <p>As you can see, the system overshoots on the way 180 degrees and then overshoots slightly, though much less, on the way back up. This overshoot can be reduced by adding derivative control. Steady state error is very low - from analysing the steady state data, I can see that it is less than 1 degree.</p>                            
-
+                            <p>As you can see, the system overshoots on the way up to 180 degrees. This overshoot can be reduced by adding derivative control. Steady state error is very low - from analysing the steady state data, I can see that it is less than 1 degree.</p>                            
                             <h4> PD Control - Kp = 0.7, Kd = 30 </h4>
                             <p>The D parameter is used to help reduce overshoot and oscillations around steady state. Generally, it acts as a damper on the system. I increased the D value until reaching the minimum amount that would minimise overshoot without introducing any instabiity or unwanted behaviours to the system, which can happen for large values of D. The graphs below show the performance of the system with the same setpoint of 180 degrees, but this time using derivative control too.</p>
                             <img width=50% height=auto source src="assets/img/lab6-KpandKd-correct.png"></img>
@@ -699,23 +702,23 @@
 
                             <h3 class="mb-0">4) Integral Control </h3>
                             <h4> Justification of Lack of Integral Control In Final Controller</h4>
-                            <p> The integral term in PID control is typically used to remove steady state error. However, in practice, I found that my controller had very little steady state error (typically less than ~1 degree). Also, adding integral control can have undesirable effects on the system, increasing both overshoot and settling time. As a result of this, while did successfuly implement integral control to my controller, I decided not to use this in my final controller tuning.</p>
+                            <p> The integral term in PID control is typically used to remove steady state error. However, in practice, I found that my controller had very little steady state error (typically less than ~1 degree). Also, adding integral control can have undesirable effects on the system, increasing both overshoot and settling time. As a result of this, while I did successfuly implement integral control to my controller, I decided not to use this in my final controller tuning.</p>
 
                             <h4> [5000-Level Task] Implementation of Integral Control & Wind-up Protection</h4>
-                            <p> In order to implement my integral controller, I added a new variable, culm_sum, which collects a culmulative sum of the error accumulated over time. I also added wind-up protection to my controller, in the form of capping the magnitude of my I term at 100. Integrator wind-up can occur when the controller output saturates, causing the integral term to continue integrating error beyond useful limits. In this case, the integral term grows very large causing an overshoot. It is therefore necessary to implement anti-wind methods to prevent this by limiting the growth of integral term. My final implementation of my PID controller can be seen below.</p>
+                            <p> In order to implement my integral controller, I added a new variable, culm_sum, which collected a culmulative sum of the error accumulated over time. I also added wind-up protection to my controller, in the form of capping the magnitude of my I term at 100. Integrator wind-up can occur when the controller output saturates, causing the integral term to continue integrating error beyond useful limits. In this case, the integral term grows very large causing an overshoot. It is therefore necessary to implement wind-up protection methods to prevent this by limiting the growth of integral term. My final implementation of my PID controller can be seen below.</p>
                             <div class="gistcontainer" id="gist6">  
                                <script src="https://gist.github.com/mzf8/f0e13bb0f51354ff31c57c9dcb9767d6.js"></script>
                             </div> 
 
 
                             <h3 class="mb-0">5) Trials </h3>
-                            <p> Next, I carried out several trials on my final controller (Kp = 0.7, Kd = 10). The aim of these trials was to characterize the effectiveness of my controller under different conditions. </p>
+                            <p> Next, I carried out several trials on my final controller (Kp = 0.7, Kd = 30). The aim of these trials was to characterize the effectiveness of my controller under different conditions. </p>
 
                             <h4> Trial 1 - Large Setpoint (720 deg)</h4>
                             <p> This trial was the simplest and consisted of giving the controller a large setpoint of 720 degrees to ensure it could reach it without spinning at a speed that was too high for the gyro to pick up. </p>
                             <img width=50% height=auto source src="assets/img/lab6-trial1.png"></img>
                             <br></br>
-                            <video width=50% height=auto controls>
+                            <video width=25% height=auto controls>
                                 <source src="assets/lab6-trial1.mp4" type="video/mp4">
                             </video>
                             <br></br>
@@ -723,23 +726,35 @@
 
                             <h4> Trial 2 - Multiple Setpoints (90, 0, -90 deg)</h4>
                             <p> Here, the setpoint was changed three times while the robot was running to ensure it could respond adequately to changes in setpoint without any derivative kick. The first set of images shows the system's response before any anti-kick functionality was added. As you can see, there are large spikes ("kicks") in the derivative signal when the setpoint changes.</p>
-                            <img width=50% height=auto source src="assets/img/lab6-trial2-kick.png"></img>
+                            <img width=30% height=auto source src="assets/img/lab6-trial2-kick.png"></img>
                             <br></br>
-                            <p> To remove derivative kick, I simply altered the code so that insted of taking the derivative of the error, de/dt, it takes the derivative of the yaw sensor data itself. This removes any impact from changing the setpoint by removing any reference to it in calculating the derivative term. The code snippet below shows the difference from doing this.</p> 
+                            <p> To remove derivative kick, I simply altered the code so that insted of taking the derivative of the error, de/dt, it takes the derivative of the yaw sensor data itself. This removes any impact from changing the setpoint by removing any reference to it in calculating the derivative term. The code snippet below shows the difference between this implementation and the normal implementation.</p> 
                             <div class="gistcontainer" id="gist6">  
                                <script src="https://gist.github.com/mzf8/f2b539325e07a4af40cd325450ddced8.js"></script>
                             </div> 
 
-                            
+                            <div class="gistcontainer" id="gist6">  
+                               <script src="https://gist.github.com/mzf8/12b7cd2eb6cccc59367fb3749b58ece2.js"></script>
+                            </div> 
 
-                            <p>The images below show the system's reponse after the code was altered to remove derivative kick. Though eliminating the kick didn't produce a huge impact on the system in this particular case, it did help smooth out the response near the setpoints.</p>
+                            <p>The images and videos below show the system's reponse after the code was altered to remove derivative kick. Though eliminating the kick didn't produce a huge impact on the system in this particular case, it did help smooth out the response near the setpoints.</p>
                             <img width=50% height=auto source src="assets/img/lab6-trial2-nokick.png"></img>
+                            <br></br>
+                            <video width=30% height=auto controls>
+                                <source src="assets/lab6-trial2.mp4" type="video/mp4">
+                            </video>
                             <br></br>
 
                             <h4> Trial 3 - Disturbance Response </h4>
-                            <p> Here, the setpoint was set to 0 degrees and the robot was nudged around to see if it could act against these disturbances to remain at 0 degrees. The controller performed adequately in this test, though it could have perhaps been slightly more responsive. This indicates that I may have to tweak my P value slightly more. Another option is to add tape to the wheels of my robot, which I have heard helps increase responsiveness by reducing friction.</p>   
+                            <p> Here, the setpoint was set to 0 degrees and the robot was nudged around to see if it could act against these disturbances to remain at 0 degrees.</p>   
                             <img width=50% height=auto source src="assets/img/lab6-trial3.png"></img>
                             <br></br>
+                            <video width=30% height=auto controls>
+                                <source src="assets/lab6-trial3.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <p>The controller performed adequately in this test, though it could have been slightly more responsive. This indicates that I may have to tweak my P value slightly more. Another option is to add tape to the wheels of my robot, which I have heard from other students helps increase responsiveness by reducing friction.</p>
 
                         </div>
                     </div>
