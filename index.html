@@ -31,6 +31,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab4">Lab 4</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab5">Lab 5</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab6">Lab 6</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab7">Lab 7</a></li>
                 </ul>
             </div>
         </nav>
@@ -760,6 +761,81 @@
                     </div>
                 </div>
             </section>
+
+             <hr class="m-0" />
+
+            <!-- Lab 7 -->
+            
+            <section class="resume-section" id="lab7">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 7</h2>
+                    <p>In Lab 7, I developed a Kalman Filter and simulated implementing it on my robot using data collected from a  test run. Kalman Filters are usefu to estimate the state of our robot even in the presence of noisy measurements. This is particularly useful given the relatively low sampling rate of our ToF sensors as it allows us to generate estimates of our state to drive our robot without having to wait for new data. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Characterising The System - Drag and Momentum </h3>
+                            <p>In order to implement a Kalman Filter, the first thing I had to do was characterise the robot to generate a state space model of my system. In order to do this, I drove my car towards the wall with a constant motor input and collected velocity readings while doing so. The goa was to reach steady state over the course of recording this data. I chose to use a u vaue of 30, corresponding to 30% of my maximum speed, as I found this best enabled me to reach steady-state in a reasonable time-frame.</p>
+
+                            <h4>Graphs</h4>
+                            <p>After running this test several times to get useful results, I ended up with the following graph. Note that there is a slight discrepency near t = 35s in the ToF sensor readings. However, since we are only really concerened with the data at steady state and at 90% rise time, this isn't a big issue. I also chose to compute estimates of the speed of the robot from the ToF sensor data. This was useful in assessing exactly when the robot's speed reached steady state. This computed speed is shown in the final plot of the image below. To calculate this, I used a simple center approximation to estimate the slope locally. The code for this can be seen below.</p>
+                            <img width=100% height=auto source src="assets/img/lab7-slope-calc.png"></img>
+                            <br></br>
+                            <img width=50% height=auto source src="assets/img/lab7-sys-graph.png"></img>
+                            <br></br>
+
+                            <h4>Analysis</h4>
+                            <p>With this data, I could then extract the 90% rise time, as well as the steady state velocity. The steady state velocity was calculated using the mean of the last four velocities (excluding the very last value, since it seemed anomalous). I found the values were as follows: </p>
+                            <ul>
+                                <li>90% Rise Time: 2.004 seconds</li>
+                                <li>Steady State Velocity: -2215.8355 mm/s </li>
+                            </ul>
+                            <p>I then calculated my values of d and m, which correspond to pseudo-values that characterise the system's drag and mass. These values are needed to populate the A and B matrices in the Kalman Filter. I found the values were as follows: </p>
+                            <ul>
+                                <li>d: -0.000451</li>
+                                <li>m: -0.000363 </li>
+                            </ul>
+
+                            <h4>Saving to CSV</h4>
+                            <p>Finally, I saved this data to a csv file so that I could preserve it for future use and would not have to repeat the trial if my kernel restarted. I used the in-built "csv" library to this. The code below shows how values were stored.</p>
+                            <img width=100% height=auto source src="assets/img/lab7-csv-save.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">2) Initialising Kalman Filter</h3>
+                            <h4>Initalise State Space Equation Matrices</h4>
+                            <p>With the d and m values calculated, I can now begin to initialise the A and B matrices that are used in my state space equation, as well as defining the state space matrix, x. These matrices are shown below. </p>
+                            <img width=30% height=auto source src="assets/img/lab7-statespace-eq.png"></img>
+                            <br></br>
+
+                            <p>In order to initialise these arrays, I ran the following piece of code: </p>
+
+                            <img width=100% height=auto source src="assets/img/lab7-init.png"></img>
+                            <br></br>
+
+                            <h4>Initalise Noise Matrices & Define Kalman Filter Function </h4>
+                            <p>In order to implement a Kalman Filter it is also very important to correctly specify both the process noise and sensor (measurement) noise covariance matrices. These covariance matrices essentially determine the weighting applied by the Kalman Filter to the sensor data vs. the estimated data. If the sensor uncertainty is low, the Kalman Filter will more closely match the sensor data and if it is high, the Kalman Filter will place a greater emphasis on the predictions generated by the state space model we have created. Meanwhile, the process noise describes the uncertainty in the state space model we are using, with sigma_1 being the uncertainty in position and sigma_2 being the uncertainty in velocity. The code snippet below shows how these matrices were defined as well as how the Kalman Filter function was defined. One key point in the function definition is the scaling applied to u. My u value inputs have a magnitude of 0 to 100. So, I first have to divide by 100 to get it between 0 and 1. Next, since we assumed u = 1 when first calculating d and m, even though the real input was 30, we have to divide by 0.3 to get our scaled u value. </p>
+                            <img width=100% height=auto source src="assets/img/lab7-kf-define.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">3) Run Kalman Filter On Test Data</h3>
+                            <p>I could now run my Kalman Filter on the test data I had collected during a run of my position-based PD controller from Lab 5. This was accomplished by looping through the data points and applying the Kalman Filter to them, as shown below. </p>
+                            <img width=100% height=auto source src="assets/img/lab7-kf-run.png"></img>
+                            <br></br>
+
+                            <h4>Results</h4>
+                            <p>After applying my final Kalman Filter to my data, I plotted it to compare. This plot can be seen below. The Kalman Filter appears to perform very well and tracks the expected path nicely (first plot), as well as giving sensible values for the speed of the robot (last plot). </p>
+
+                            <img width=50% height=auto source src="assets/img/lab7-kf-result.png"></img>
+                            <br></br>
+
+
+                            <h4>Parameter Tuning Discussion</h4>
+                            <p>...</p>
+
+                            <h4>Testing W/ Noise</h4>
+                            <p>...</p>
+
+
+
+
 
 
 
