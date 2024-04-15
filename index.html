@@ -32,6 +32,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab5">Lab 5</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab6">Lab 6</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab7">Lab 7</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab8">Lab 8</a></li>
                 </ul>
             </div>
         </nav>
@@ -835,6 +836,58 @@
 
                             <h4>Testing W/ Noise</h4>
                             <p>...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <hr class="m-0" />
+
+            <!-- Lab 7 -->
+            
+            <section class="resume-section" id="lab8">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 8</h2>
+                    <p>Lab 8 was the culmination of much of the work we have done on our robots this semester. Here, we implemented a stunt on the robot, choosing between a 180 degree drift and a flip. I chose to implement the drift (Task B) using my PID orientation controller from Lab 6. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Stunt Requirements & Implementation</h3>
+                            <p>The drift stunt required us to start our robot within 4m from the wall, drive fast forward and then, once the robot was within 914mm of the wall, initiate a 180 degree turn before driving back in the direction it came from.</p>
+
+                            <o>My basic approach was to create a simple function that drove the robot forwards for a set amount of time (800ms in this case), while logging data. Once the time had elapsed, the PID controller was activated with a setpoint of 180 degrees, causing the robot to turn around while drifting. Once the setpoint was reached, the PID controller would stop and return to the drive forward function. In order to decide when the PID controller should stop running, I had to add a few lines of code that counted each time the current angle got within 5% of the setpoint. If the robot was within these tolerances for 5 iterations in a row then it would stop runnng. The code snippet below shows how that was handled.</o>
+
+                            <div class="gistcontainer" id="gist6">  
+                               <script src="https://gist.github.com/mzf8/604920ab1512168f1988d1678ea30c1b.js"></script>
+                            </div> 
+
+
+                            <h3 class="mb-0">2) Videos of Successful Trials </h3>
+                            <p>The videos below show the results of three succesful trial runs of this stunt, along with data from each of the runs. The system performed acceptably in all three trials, though the PID controller seemed to stutter a bit when turning in the second trial.</p>
+
+                            <h4>Trial 1</h4>
+                            <img width=30% height=auto source src="assets/img/lab8-trial1.png"></img>
+                            <br></br>
+                            <video width=30% height=auto controls>
+                                <source src="assets/lab8-trial1.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+                            
+                            <h4>Trial 2</h4>
+                            <img width=30% height=auto source src="assets/img/lab8-trial2.png"></img>
+                            <br></br>
+                            <video width=30% height=auto controls>
+                                <source src="assets/lab8-trial2.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+                            
+                            <h4>Trial 3</h4>
+                            <img width=30% height=auto source src="assets/img/lab8-trial3.png"></img>
+                            <br></br>
+                            <video width=30% height=auto controls>
+                                <source src="assets/lab8-trial3.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+                            
                         </div>
                     </div>
                 </div>
