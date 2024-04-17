@@ -33,6 +33,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab6">Lab 6</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab7">Lab 7</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab8">Lab 8</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab9">Lab 9</a></li>
                 </ul>
             </div>
         </nav>
@@ -888,6 +889,102 @@
                             </video>
                             <br></br>
                             
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+             <hr class="m-0" />
+
+
+            <!-- Lab 9 -->
+            
+            <section class="resume-section" id="lab9">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 9</h2>
+                    <p>In Lab 9, we mapped out a static arena in the lab by placing our robot in five different locations in the arena and having it spin about its axis while collecting distance readings from the ToF sensors. After collecting data from each of these locations in the local reference frame of the robot, we then applied transformation matrices to the data to convert these readings to the global reference frame in cartesian coordinates. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Orientation Control</h3>
+                            <p>The first part of this lab required us to decide on a control method for spinning our robot. I opted to use my orientation PID controller from Lab 6 for this, spinning the robot in 10 degree increments for a total of 36 readings per rotation per sensor - resulting in a total of 74 readings across both sensors. I chose this method, rather than continuously spinning the robot, to ensure that the robot was stationary when each reading was taken.</p>
+
+                            <p>A key concern with spinning the robot was ensuring it was actually spinning roughly about its own axis. If the robot was translating at all while spinning, then its distance from the obstacles around it would change over time, causing errors in the map. The video below shows that the robot turned roughly about its own axis for the duration of the turn.</p>
+                            <video width=50% height=auto controls>
+                                <source src="assets/lab9-turnevidence.mp4" type="video/mp4">
+                            </video>
+                            <br></br>
+
+                            <p>Given the drift from the gyroscope sensors, the accuracy of the turns decreased over time with each subsequent turn. </p>
+
+                            <h3 class="mb-0">2) Error Estimation</h3>
+                            <p>Given the drift in the sensor, the accuracy of the angle increments and the reliability with which the robot turns on axis, we can reason about the errors in our readings. From implementing the Kalman Filter in Lab 7, as well as the ToF testing in Lab 3, I estimate that the average uncertainty in a given ToF sensor reading is about ~10mm. From the video of the robot turning about its axis, we can see that the robot deivates at most about 1/5th of a tile (0.2 ft) when turning about its axis, which corresponds to 60mm. From the video, we can also estimate that the robot deviates from the "true" angle by no more than about 5 degrees over the course of a 360 degree turn. 
+
+                            Assuming the robot was in a 4x4m square, empty room. Over the course of a turn, the on-axis error ranges from 0-60mm, so the average error is about 30mm. The uncertainty from the ToF sensor itself can be assumed to be constant. This gives us an average error of ~40mm and a maximimum error on the order of ~70mm. </p>
+
+                            <h3 class="mb-0">3) Data Collection</h3>
+                            <p>With the turning behaviour setup, the robot could now be placed into the arena to collect data. The image below shows this arena, as well as labelling each point with a number that is used to differentiate the data from each point in the maps. The image also contains the coordinates of each point (as measured in feet), as well as showing the sign convention used in the GLOBAL reference frame.</p>
+                            <img width=50% height=auto source src="assets/img/lab9-arena.jpg"></img>
+                            <br></br>
+
+                            <p>The robot was then placed in each position and a map() command was sent. This command would set the PID orientation setpoint to 10 degrees, once the setpoint had been reached, a reading would be taken from the ToF sensors and stored in an array. The setpoint would then be incremented by 10 degrees and the robot would begin turning to the next position. This behaviour would repeat until a full 360 degree rotation had taken place, at which point the data would be sent over bluetooth to my computer. Once, I had recieved the data, I then generated polar plots at each point as a sanity check. The image below shows a polar plot of the data recorded at Position 4 in the arena. </p>
+                            <img width=50% height=auto source src="assets/img/lab9-pos4-polar.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">4) Plotting in Cartesian</h3>
+                            <p>Once data had been collected at each of the five points in the arena, it was time to transform it into Cartesian coordinates so that a map of the entire space could be constructed from the data taken at each location. In order to do this, the saved front distance, side distance and theta angles were first read from the CSV file. Next, a small offset was added to the side and front distance values to account for the sensors' distance from the true center of the floortile due to their mounting on the robot. In the case of the front sensor, an extra 100mm was added to each data point, while for the side sensor, 30mm was added. These distance values were then placed into two 2x1 matrices, which had the form: [x; y]. They were also converted to feet. It is also worth noting that the sign covention used is that the positive x-axis points towards the robot's front, while the positive y-axis points out of the robot's left side (when looking from behind the robot). As a result of this, in my case, the side sensor's values were all entered as negative because my side sensor was mounted on the right side.</p>
+
+                            <p>Next, two transformations were applied to each data point in order to transform them from the robot's intertial reference frame to the global frame. The first was a translation of the form [dx; dy]. The translation at each point corresponds to its grid location. For example, in the case of point 1, the translation applied is [-5; -3]. Next, a rotation is applied. This follows the standard form for a 2x2 rotation matrix in 2D-cartesian space: [cos(theta), -sin(theta); sin(theta), cos(theta)], where theta corresponds to the yaw angle of the robot at that data point.The position matrices were then multiplied by the transformation matrix in order to get the global points. The code below shows how this was done for point 1.</p>
+                            <img width=100% height=auto source src="assets/img/lab9-plot-code.png"></img>
+                            <br></br>
+
+                            <h4>Error Correction</h4>
+                            <p> A small offset was also added to this angle to straighten the data points. In the case of point 1, this offset was 5 degrees. This is because many of the data points were at an incorrect angle - this could be due to innacuracies in the yaw readings or inconsistent turning angles, for example. The images below show the cartesian plot for point 1 before (first image) and after (second image) applying this offset. For all subsequent plots, only the final "adjusted" plot is shown. The importance of doing this is shown in Section 5, below. </p>
+
+                            <h4>Cartesian Plots @ Point 1</h4>
+                            <h5><i>Raw</i></h5>
+                            <img width=50% height=auto source src="assets/img/lab9-pt1-raw.png"></img>
+                            <br></br>
+                            <h5><i>Adjusted</i></h5>
+                            <img width=50% height=auto source src="assets/img/lab9-pt1.png"></img>
+                            <br></br>
+
+                            <h4>Cartesian Plots @ Point 2</h4>
+                            <img width=50% height=auto source src="assets/img/lab9-pt2.png"></img>
+                            <br></br>
+
+                            <h4>Cartesian Plots @ Point 3</h4>
+                            <img width=50% height=auto source src="assets/img/lab9-pt3.png"></img>
+                            <br></br>
+
+                            <h4>Cartesian Plots @ Point 4</h4>
+                            <img width=50% height=auto source src="assets/img/lab9-pt4.png"></img>
+                            <br></br>
+
+                            <h4>Cartesian Plots @ Point 5</h4>
+                            <img width=50% height=auto source src="assets/img/lab9-pt5.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">5) Merging Into One Map</h3>
+                            <p>Finally, the data from each point could be plotted together. The first image below shows what this would look like if the offset hadn't been added to the data before, while the second one shows the final version with offset added. As you can see, the walls are much straighter and form better right angles, as they do in real-life, when the angles are adjusted by adding an offset </p>
+                            <h5><i>Raw</i></h5>
+                            <img width=50% height=auto source src="assets/img/lab9-rawmap.png"></img>
+                            <br></br>
+                            <h5><i>Adjusted</i></h5>
+                            <img width=50% height=auto source src="assets/img/lab9-editmap.png"></img>
+                            <br></br>
+
+                            <h4>Adding Walls</h4>
+
+                            <p>From this map, I then manually plotted walls on top of the data points. In order to correct for errors, I applied some of the following basic intuitions: data taken from points closer to a given wall was trusted more than data taken from points further away; and, points without many other points near them were taken as outliers and ignored, such as the ones outside the edges of the map. The image below shows the result of this approach.</p>
+                            <h5><i>Final Map w/ Walls</i></h5>
+                            <img width=100% height=auto source src="assets/img/lab9-finalmap.png"></img>
+                            <br></br>
+
+
+
+
+
+
                         </div>
                     </div>
                 </div>
