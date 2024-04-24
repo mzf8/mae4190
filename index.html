@@ -34,6 +34,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab7">Lab 7</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab8">Lab 8</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab9">Lab 9</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab10">Lab 10</a></li>
                 </ul>
             </div>
         </nav>
@@ -981,7 +982,53 @@
                             <br></br>
 
 
+                        </div>
+                    </div>
+                </div>
+            </section>
 
+
+            <hr class="m-0" />
+
+
+            <!-- Lab 10 -->
+            
+            <section class="resume-section" id="lab10">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 10</h2>
+                    <p>In Lab 10, I implemented a grid localization scheme using a Bayes Filter. In this Lab, we implemented the filter using a simulation of the robot generated in Python. The Filter uses its knowledge of the environment along with state estimation in order to compute the probability that it is at a given location given a set of sensor readings and knowledge of its movements/ </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Setup & Algorithmic Overview</h3>
+                            <p>The Bayes Filter is based on a grid-like representatioon of the world around the robot. In order to make computations feasible, we discretize the space in three different directions: x, y, and theta. The resolution of the grid is 0.3048m, 0.3048, and 20 degrees.</p>
+                            <p>In each iteration of the Bayes Filter, we update the probability that we are in any given cell in the grid, given the movement carried out by the robot and the data reported by its sensors.</p>
+
+                            <h3 class="mb-0">2) Compute Control</h3>
+                            <p>The first step of building the Bayes Filter required us to create a function that would take two odometry poses and calculate the two rotations and one translation that correspond to this change in position. This is crucial in evaluating the probabilities of being in different locations later in the model. These values can be calculated based on a simple geometric model of the robot's movement, which can be seen below.</p>
+                            <img width=50% height=auto source src="assets/img/lab10-pos-model.png"></img>
+                            <br></br>
+                            <p>With this model in mind, the function was then implemented, as shown below.</p>
+                            <img width=100% height=auto source src="assets/img/lab10-compute-control.png"></img>
+
+                            <h3 class="mb-0">3) Odometry Motion Model</h3>
+                            <p>The next step involved creating a functiion that would take the current and previous pose of the robot, as well as a corresponding control input (in the form of two rotations and a translation). With this information, and assuming a Gaussian probability distribution, we could then calculate the probability that the robot was in fact at the given position. </p>
+                            <img width=100% height=auto source src="assets/img/lab10-odom-model.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">4) Prediction Step</h3>
+                            <p>Next, we had to create a function for the prediction step of the model. This step calculated the prior belief of the robot. In order to do this, we first compute the "actual" control input of the robot given  its current and previous poses. We then iterate through each cell in the grid and check if there is a non-negligible (> 0.001) probability the robot is there. This check is important to save computational time so that we don't check cells with a low probability. If there is a non-negligible probability, we iterate through every cell in the grid again so that we now have a pair of grid positions. Next, we use the odom_motion_model function to return the probability that the robot travelled between those two random locations given its "actual" ccontrol input. That is, what is the probability that the robot started at prev_pose and ended up at cur_pose, given its control input. Next the bel_bar (prior belief) matrix is updated to reflect this new probability. </p>
+                            <img width=100% height=auto source src="assets/img/lab10-predict.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">5) Sensor Model</h3>
+                            <p>Just as with the motion model, we also needed to create a function for the sensor model, which could be used in the update step of the Bayes Filter. This function returns the probability that a sensor measurement is true, given the robots position in the map. In order to do this, we model each measurement with a gaussian distribution centered around the "true" measurement expected at that pose (generated from the map of the space. These values are simply computed, placed into an array and returned. </p>
+                            <img width=100% height=auto source src="assets/img/lab10-sensor-model.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">6) Update Step</h3>
+                            <p>Finally, the update step of the Bayes Filter was implemented. This step updates the probabilities in the belief matrix based on the sensor measurements from the robot. The logic here is to iterate through each possible cell in the grid and calculate the probability that the robot is in this cell, given the measurements it returned (this is done using the sensor_model function). Finally, this probability is used to update the belief matrix. Lastly, the belief matrix is normalised. This is done to ensure that the probabilities of being in each cell add up to 1.</p>
+                            <img width=100% height=auto source src="assets/img/lab10-update.png"></img>
+                            <br></br>
 
 
 
@@ -989,7 +1036,6 @@
                     </div>
                 </div>
             </section>
-
 
 
 
