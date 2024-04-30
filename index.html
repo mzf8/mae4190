@@ -35,6 +35,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab8">Lab 8</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab9">Lab 9</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab10">Lab 10</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab11">Lab 11</a></li>
                 </ul>
             </div>
         </nav>
@@ -835,9 +836,6 @@
                              <img width=50% height=auto source src="assets/img/lab7-kf-lowproc.png"></img>
                             <br></br>
 
-
-                            <h4>Testing W/ Noise</h4>
-                            <p>...</p>
                         </div>
                     </div>
                 </div>
@@ -1032,10 +1030,7 @@
 
                             <h3 class="mb-0">7) Testing The Filter</h3>
                             <p>The video below shows a test of the implemented Bayes Filter running in the simulated environment. Overall, the Filter performs extremely well. The blue line on the video shows the most likely state after each iteration of the Filter, while the green line indicates the actual position of the robot ( "ground truth"). The red line shows the position that would have been predicted if we had only relied on odometry. Clearly, the Bayes Filter performs much better than the odometry. </p>
-                            <iframe width=50% height=20% src="https://www.youtube.com/embed/YvEMhR52DZ4">
-                            </iframe>
-
-
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/YvEMhR52DZ4?si=iAn9Dx4TUiqqRFA_" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
                         </div>
                     </div>
@@ -1043,7 +1038,60 @@
             </section>
 
 
+            <hr class="m-0" />
 
+
+            <!-- Lab 11 -->
+            
+            <section class="resume-section" id="lab11">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 11</h2>
+                    <p>In Lab 11, I developed the "real" implementation of the Bayes Filter developed in Lab 10. The difference here was that the Filter was deployed on the actual robot using real data from its sensor. The robot was then placed in the arena that we tested in during Lab 9 and the update step of the filter was run as a test. </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Simulation Test</h3>
+                            <p>Before starting, I first ran my code for the Bayes Filter in the simulation in order to verify that it was working correctly. The results of this test run are shown in the screenshot below.</p>
+                            <img width=100% height=auto source src="assets/img/lab11-sim-final.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">2) Python Set-Up </h3>
+                            <p>While the Filter was implemented on the robot itself, the actual processing for the Bayes Filter was done remotely from within the Jupyter envrionment in Python. In essence: the robot would spin about its axis in 20 degree increments, taking measurements from the front time of flight sensor at each increment. Once it had completed a full 360 degree turn, it would send the data via bluetooth to my computer, where the Bayes Filter would take it as an input to carry out the update step. In order to implement this on the Python end, two key functions had to be created.</p>
+                            <p>First, the notification handler, map_handler() was implemented. This was fairly simple code, which saved the time of flight sensor and yaw data into two arrays. The values were converted into meters and radians, respectively.</p>
+                            <img width=100% height=auto source src="assets/img/lab11-obs-loop.png"></img>
+                            <br></br>
+
+                            <p>Secondly, the perform_observation_loop() function was implemented within the RealRobot class. This function is what triggers the spinnng, data-recording, behaviour on the robot. First, the PID controller's K values are set, along with a 20 degree setpoint. Next, the START_MAP function is called, which tells the robot to spin about its axis in 20 degree increments, collecting data along the way. The asyncio sleep routine is used to wait for the notifcation handlerto finish running - this allows us to only wait on this coroutine, rather than pausing the running of the entire Python script. Finally, the data was mapped to a numpy column array and returned, as per the function definition.s</p>
+                            <img width=100% height=auto source src="assets/img/lab11-obs-loop.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">3) Testing </h3>
+                            <p>The robot was then placed in the Arena at each of the marked out waypoints and tested. The images below show its performance in each tests. Note that in images where only one dot is visible, this is because both the ground truth and belief were in the same location (i.e., a good result). Overall, the localisation algorithm performed very well.</p>
+
+                            <h4>Test @ (-3, -2)</h4>
+                            <img width=50% height=auto source src="assets/img/lab11-pos1.png"></img>
+                            <br></br>
+
+                            <h4>Test @ (0, 0)</h4>
+                            <img width=50% height=auto source src="assets/img/lab11-pos2.png"></img>
+                            <br></br>
+
+                            <h4>Test @ (0, 3)</h4>
+                            <img width=50% height=auto source src="assets/img/lab11-pos3.png"></img>
+                            <br></br>
+
+                            <h4>Test @ (5, -3) </h4>
+                            <img width=50% height=auto source src="assets/img/lab11-pos4.png"></img>
+                            <br></br>
+
+                            <h4>Test @ (5, 0)</h4>
+                            <img width=50% height=auto source src="assets/img/lab11-pos5.png"></img>
+                            <br></br>
+                            
+                            
+                        </div>
+                    </div>
+                </div>
+            </section>
 
 
 
