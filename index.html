@@ -36,6 +36,7 @@
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab9">Lab 9</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab10">Lab 10</a></li>
                     <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab11">Lab 11</a></li>
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#lab12">Lab 12</a></li>
                 </ul>
             </div>
         </nav>
@@ -1093,8 +1094,59 @@
                 </div>
             </section>
 
+            <hr class="m-0" />
 
 
+            <!-- Lab 12 -->
+            
+            <section class="resume-section" id="lab12">
+                <div class="resume-section-content">
+                    <h2 class="mb-5">Lab 12</h2>
+                    <p>Lab 12 was a culmination of much of the work we completed this semester, combining PID orientation control, PID position control and localisation via a Bayes Filter. In this lab, we had to get the robot to traverse a series of waypoints as accurately and rapidly as possible. I opted to use a combination of Open Loop and Closed Loop control, as well as localisation at certain points.</p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
+                            <h3 class="mb-0">1) Problem Statement & Solution Setup</h3>
+                            <p>The problem was to traverse 9 waypoints spaced throughout the arena, while also avoiding obstacles. We were provided with a map of the space and were free to do this however we wanted. The image below shows the map with the waypoints marked in green. </p>
+                            <img width=50% height=auto source src="assets/img/lab12-path.png"></img>
+                            <br></br>
+                            <p>For my solution, I initially tried to implement localisation at every point. That is, at each point, my robot would do a 360 degree turn while collecting observation data and then the update step of the Bayes Filter would run in order to estimate the location of the robot. I subsequently chose to reduce the number of locations at which I localised for two reasons. The first of these was to speed up the operation of the robot: the 360 degree turn needed for localisation takes time and often doesn't produce particularly accurate results. The second reason was because I found that I could get much better results for the first three points by manually hardcoding a path, as such localisation was not needed at these points. The reasons for this decision are discussed in Section 2.</p>
+                            <p>Ultimately, my solution involved: hardcoding the path to the first two waypoints; and then localising at every other waypoint number - e.g. at waypoint 4, 6 and 8 I would localise. At points where I did not localise (3, 5, 7, 9), I would assume my groundtruth pose was correct (i.e., that I had successfully made it to the right waypoint and was trying to travel to the next one ) in order to work out where my robot had to go. While I could have probably hardcoded all of the points to complete the path, I thought it would be more interesting to try and incorporate localisation. </p>
+
+                            <h3 class="mb-0">2) Position Control</h3>
+                            <p>In order to make this work, I had to make some slight adjustments to my PID position controller. Rather than directly specifying a distance from the wall at which my robot should stop, which is how it worked before, I now needed to specify a distance to travel and have my robot work out where to stop based on this. Changing this was relatively straightforward and essentially involved storing the starting distance from the wall using the ToF sensor. I chose to take 10 initial readings and average them to increase the reliability of the results. Once this value was stored, you could subtract the distance to travel to work out what your setpoint from the wall should be. For instance, imagining you start 1000mm away from the wall and want to travel 200mm, your setpoint would  be 800mm from the wall. The code below shows how I got the initial ToF readings (incidentally, this is the same code I used to get average readings at each of the increments when performing my localisation turn). </p>
+                            <div class="gistcontainer" id="gist1">
+                                 <script src="https://gist.github.com/mzf8/506fe04112e889ec0d7bc2208c896e38.js"></script>
+                            </div>
+                            <p>While this worked well for most points, some waypoints proved to be very problematic. The main issue with using this approach to measure distance travelled was that the robots do not travel particularly straight. This means that when the ToF sensors are pointed at an angle to a wall far away, any small deviation from a straight line will result in a large change in distance perceived. This issue is demonstrated on the map below for the first waypoint. You can see that the ToF sensor is measuring a very distant point at an angle. This is why I chose to hardcode this point. </p>
+                            <img width=50% height=auto source src="assets/img/lab12-pos-issue.png"></img>
+                            <br></br>
+
+                            <h3 class="mb-0">2) Orientation Control</h3>
+                            <p>My orientation controller remained largely the same as in previous labs - no significant restructuring was necesary. One issue I had with this was due to the slight innacuracy with my PID controller. Over the course of a 360 degree turn for localisation, it often ended up ~15-30 degrees off course so I added an offset at the end of the turn to correct the robot's orientation back to zero. This can be seen in my solution implementation in Section 3.</p>
+
+                            <h3 class="mb-0">3) Solution Implementation</h3>
+                            <p>The code snippet below shows my implementation of this solution. One thing to note is the structure of my move() function. The third parameter of the function is an angle, "offset", that is subtracted from the first rotation performed by the robot. There are a few different possible values for this offset. If the robot has just performed a localisation loop, the offset is 20 degrees to account for the fact that the robot consistently overshoots by about this amount when performing the 360. If the robot has not localised, the offset is 0 degrees as no turn has taken place that needs correcting. There are also a few manual offsets that can be seen for points 6 and 7. These were added because I found that my robot was consistently overshooting the angles in these locations. </p>
+                            <div class="gistcontainer" id="gist1">
+                                <script src="https://gist.github.com/mzf8/db4b0f22d7f77885f1895383796caf06.js"></script>
+                            </div>
+
+                            <h3 class="mb-0">4) Testing Solution & Thoughts on Improvements</h3>
+                            <p>After hours of testing, my robot was largely successful in reaching most of the waypoints (up to waypoint 7). The main issue limiting the success of my solution was the lack of accuracy with my orientation and position control. The lack of accuracy with my orientation controller could likely be improved in three ways: firstly, I could try to tune my PID controller further to improve the accuracy of the turns, however I am doubtful that I could make significant improvements with this method alone; secondly, I could reset my yaw value to zero after every 20 degree increment - this would help avoid the compounding affects of gyroscope drift when localising; finally, the magnometer could be used as a way to reset the robot to absolute zero after each turning maneuver was complete. For improving the reliability of position control, I would likely try to implement a Kalman Filter to help increase the reliability of the distance readings.</p>
+
+                            <p>The video below shows the results of one of my final runs. The largest failure point was at the end - since my orientation controller wasn't accurate enough, it would overshoot the angle it needed by ~10-20 degrees and travel into the empty space around waypoint 1 instead of hitting waypoint 8.</p>
+                            <img width=50% height=auto source src="assets/img/lab12-map.png"></img>
+                            <br></br>
+
+                            <iframe width="560" height="315" src="https://www.youtube.com/embed/Q7NZVZSsP7w?si=5SEBxWTRgmzjfCKP" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+
+
+
+
+
+
+               
 
 
         <!-- Bootstrap core JS-->
